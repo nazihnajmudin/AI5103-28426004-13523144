@@ -1,0 +1,467 @@
+{
+  "n_diesets": 18,
+  "n_machines": 2,
+  "n_fixed_diesets_ignored": 22,
+  "machines": [
+    {
+      "machine_id": 24,
+      "machine_name": "GP260",
+      "capacity_hours": 1119.428127476101,
+      "capacity_hours_total": 3027.2706035218735,
+      "fixed_load_hours": 1907.8424760457724
+    },
+    {
+      "machine_id": 27,
+      "machine_name": "GP640",
+      "capacity_hours": 1292.9740338106612,
+      "capacity_hours_total": 1292.9740338106612,
+      "fixed_load_hours": 0.0
+    }
+  ],
+  "diesets": [
+    {
+      "dieset_id": 10,
+      "dieset_number": "4984449, 4984462",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 153.57266466084454,
+          "work_cost": 278120.0957007895,
+          "transport_cost": 23071.72,
+          "total_cost": 301191.81570078945
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 153.57266466084454,
+          "work_cost": 215923.16651314741,
+          "transport_cost": 21484.06,
+          "total_cost": 237407.2265131474
+        }
+      ]
+    },
+    {
+      "dieset_id": 9,
+      "dieset_number": "4984449, 5031550",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 51.17740636052053,
+          "work_cost": 92682.28291890267,
+          "transport_cost": 0.0,
+          "total_cost": 92682.28291890267
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 51.17740636052053,
+          "work_cost": 71955.43334289188,
+          "transport_cost": 2178.0,
+          "total_cost": 74133.43334289188
+        }
+      ]
+    },
+    {
+      "dieset_id": 1,
+      "dieset_number": "4985498",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 47.349902561818766,
+          "work_cost": 85750.67353945378,
+          "transport_cost": 0.0,
+          "total_cost": 85750.67353945378
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 47.349902561818766,
+          "work_cost": 66573.96300191717,
+          "transport_cost": 1584.0,
+          "total_cost": 68157.96300191717
+        }
+      ]
+    },
+    {
+      "dieset_id": 4,
+      "dieset_number": "5090393",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 108.50665695171226,
+          "work_cost": 196505.55573955088,
+          "transport_cost": 9900.0,
+          "total_cost": 206405.55573955088
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 108.50665695171226,
+          "work_cost": 152560.35967410743,
+          "transport_cost": 0.0,
+          "total_cost": 152560.35967410743
+        }
+      ]
+    },
+    {
+      "dieset_id": 30,
+      "dieset_number": "5101959",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 71.60341379724841,
+          "work_cost": 129673.78238681688,
+          "transport_cost": 594.0,
+          "total_cost": 130267.78238681688
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 71.60341379724841,
+          "work_cost": 100674.39979893128,
+          "transport_cost": 0.0,
+          "total_cost": 100674.39979893128
+        }
+      ]
+    },
+    {
+      "dieset_id": 32,
+      "dieset_number": "5102992",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 63.89939928225932,
+          "work_cost": 115721.81210017162,
+          "transport_cost": 1188.0,
+          "total_cost": 116909.81210017162
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 63.89939928225932,
+          "work_cost": 89842.5553908566,
+          "transport_cost": 0.0,
+          "total_cost": 89842.5553908566
+        }
+      ]
+    },
+    {
+      "dieset_id": 15,
+      "dieset_number": "5103015",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 127.89244829483631,
+          "work_cost": 231613.22386194856,
+          "transport_cost": 1233930.0,
+          "total_cost": 1465543.2238619486
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 127.89244829483631,
+          "work_cost": 179816.78230253985,
+          "transport_cost": 1223040.0,
+          "total_cost": 1402856.7823025398
+        }
+      ]
+    },
+    {
+      "dieset_id": 11,
+      "dieset_number": "5448237",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 4.712121212121213,
+          "work_cost": 8533.651515151516,
+          "transport_cost": 3342.2400000000002,
+          "total_cost": 11875.891515151516
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 4.712121212121213,
+          "work_cost": 6625.242424242425,
+          "transport_cost": 2867.04,
+          "total_cost": 9492.282424242425
+        }
+      ]
+    },
+    {
+      "dieset_id": 0,
+      "dieset_number": "5457220",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 7.911447099164871,
+          "work_cost": 14327.630696587581,
+          "transport_cost": 0.0,
+          "total_cost": 14327.630696587581
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 7.911447099164871,
+          "work_cost": 11123.494621425809,
+          "transport_cost": 99.0,
+          "total_cost": 11222.494621425809
+        }
+      ]
+    },
+    {
+      "dieset_id": 18,
+      "dieset_number": "5709958",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 170.92554720877965,
+          "work_cost": 309546.16599509993,
+          "transport_cost": 10824.0,
+          "total_cost": 320370.16599509993
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 170.92554720877965,
+          "work_cost": 240321.31937554418,
+          "transport_cost": 12988.800000000001,
+          "total_cost": 253310.11937554416
+        }
+      ]
+    },
+    {
+      "dieset_id": 26,
+      "dieset_number": "5717907",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 80.10521752837326,
+          "work_cost": 145070.548943884,
+          "transport_cost": 3696.0,
+          "total_cost": 148766.548943884
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 80.10521752837326,
+          "work_cost": 112627.93584489281,
+          "transport_cost": 4435.2,
+          "total_cost": 117063.13584489281
+        }
+      ]
+    },
+    {
+      "dieset_id": 3,
+      "dieset_number": "5718733, 5718701",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 233.6356209150327,
+          "work_cost": 423114.1094771242,
+          "transport_cost": 313632.0,
+          "total_cost": 736746.1094771242
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 233.6356209150327,
+          "work_cost": 328491.683006536,
+          "transport_cost": 314265.6,
+          "total_cost": 642757.283006536
+        }
+      ]
+    },
+    {
+      "dieset_id": 7,
+      "dieset_number": "5801397",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 424.2708658429868,
+          "work_cost": 768354.5380416492,
+          "transport_cost": 1235208.0,
+          "total_cost": 2003562.5380416492
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 424.2708658429868,
+          "work_cost": 596524.8373752394,
+          "transport_cost": 1238699.4,
+          "total_cost": 1835224.2373752394
+        }
+      ]
+    },
+    {
+      "dieset_id": 17,
+      "dieset_number": "6139086",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 109.69962453066333,
+          "work_cost": 198666.02002503126,
+          "transport_cost": 5280.0,
+          "total_cost": 203946.02002503126
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 109.69962453066333,
+          "work_cost": 154237.67209011264,
+          "transport_cost": 6336.0,
+          "total_cost": 160573.67209011264
+        }
+      ]
+    },
+    {
+      "dieset_id": 2,
+      "dieset_number": "6139136, 5718701",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 115.09595959595961,
+          "work_cost": 208438.78282828289,
+          "transport_cost": 3168.0,
+          "total_cost": 211606.78282828289
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 115.09595959595961,
+          "work_cost": 161824.9191919192,
+          "transport_cost": 3801.6000000000004,
+          "total_cost": 165626.51919191921
+        }
+      ]
+    },
+    {
+      "dieset_id": 14,
+      "dieset_number": "6537158",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 129.41798941798942,
+          "work_cost": 234375.97883597887,
+          "transport_cost": 18480.0,
+          "total_cost": 252855.97883597887
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 129.41798941798942,
+          "work_cost": 181961.69312169313,
+          "transport_cost": 22176.0,
+          "total_cost": 204137.69312169313
+        }
+      ]
+    },
+    {
+      "dieset_id": 5,
+      "dieset_number": "6554016",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 46.23073257759606,
+          "work_cost": 83723.85669802646,
+          "transport_cost": 0.0,
+          "total_cost": 83723.85669802646
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 46.23073257759606,
+          "work_cost": 65000.41000410006,
+          "transport_cost": 990.0,
+          "total_cost": 65990.41000410006
+        }
+      ]
+    },
+    {
+      "dieset_id": 22,
+      "dieset_number": "6554065",
+      "choices": [
+        {
+          "machine_id": 24,
+          "machine_name": "GP260",
+          "work_hours": 64.32811656772802,
+          "work_cost": 116498.21910415543,
+          "transport_cost": 0.0,
+          "total_cost": 116498.21910415543
+        },
+        {
+          "machine_id": 27,
+          "machine_name": "GP640",
+          "work_hours": 64.32811656772802,
+          "work_cost": 90445.33189422559,
+          "transport_cost": 14850.0,
+          "total_cost": 105295.33189422559
+        }
+      ]
+    }
+  ],
+  "ground_truth": {
+    "source": "brute_force",
+    "optimal_cost": 5962911.992764378,
+    "optimal_assignment_dieset_to_machine": {
+      "10": 27,
+      "9": 24,
+      "1": 27,
+      "4": 27,
+      "30": 27,
+      "32": 27,
+      "15": 27,
+      "11": 27,
+      "0": 27,
+      "18": 24,
+      "26": 24,
+      "3": 27,
+      "7": 27,
+      "17": 24,
+      "2": 24,
+      "14": 24,
+      "5": 27,
+      "22": 24
+    },
+    "n_feasible": 114795,
+    "n_total": 262144,
+    "paper_optimal_cost": 5963876.622039333,
+    "paper_optimal_bitstring": "011010011001010110011001011010101010",
+    "paper_assignment_dieset_to_machine": {
+      "10": 27,
+      "9": 24,
+      "1": 24,
+      "4": 27,
+      "30": 24,
+      "32": 27,
+      "15": 27,
+      "11": 27,
+      "0": 24,
+      "18": 27,
+      "26": 24,
+      "3": 27,
+      "7": 27,
+      "17": 24,
+      "2": 24,
+      "14": 24,
+      "5": 24,
+      "22": 24
+    }
+  }
+}
