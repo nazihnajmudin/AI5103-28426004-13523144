@@ -2,47 +2,54 @@
 
 > Bagian **Swarm Intelligence** dari tugas besar AI5103 pada dataset *Path Matters*.
 
-Bagian ini memakai **Binary Particle Swarm Optimization (BPSO)** untuk mengalokasikan dieset flexible ke mesin `GP260` atau `GP640` dengan biaya minimum. Alasan pemilihannya dijelaskan di §2, dan alur prosesnya digambarkan di §3.
+Bagian ini memakai **Binary Particle Swarm Optimization (BPSO)** untuk mengalokasikan dieset flexible ke mesin `GP260` atau `GP640` dengan biaya minimum. Alasan pemilihannya dijelaskan di §2, dan alur prosesnya di §3.
 
-Kode bersama kelompok (`src/problem.py`, `src/algorithm/base.py`, `data/processed/preprocess.py`) **tidak diubah**. Preprocessing khusus swarm dibuat sebagai script terpisah.
+Data yang dipakai adalah instance kelompok di `data/processed/instances/` (hasil `preprocess.py`), sama seperti GA. Satu-satunya tambahan: optimum untuk menghitung gap diambil dari brute-force (`src/optimum.py`), bukan dari nilai paper. Alasannya ada di §1.
 
 ---
 
 ## 1. Temuan Data yang Memengaruhi Desain
 
-Brute-force atas semua $2^n$ kombinasi (paling banyak 524.288 untuk $n = 19$, selesai dalam hitungan detik) menghasilkan tiga temuan.
+Brute-force atas semua $2^n$ kombinasi (paling banyak 524.288 untuk $n = 19$, kurang dari 1 detik) menghasilkan tiga temuan.
 
-**a. Kapasitas mesin belum dikurangi beban dieset fixed.**
-Semua dieset fixed dialokasikan ke `GP260`. Namun `preprocess.py` membuangnya tanpa mengurangi kapasitas mesin. Contohnya pada instance 3: dieset fixed sudah memakai 797,16 dari 953,03 jam, sehingga sisa kapasitas sebenarnya hanya 155,9 jam. README §1.2 sendiri menyebut dieset fixed tetap menyumbang beban kapasitas.
+**a. Optimum paper bukan optimum terbaik untuk instance 16, 18, dan 19.**
+Brute-force menemukan solusi feasible yang lebih murah 0,016–0,046%. Jika gap dihitung terhadap `optimal_cost` dari paper, sebuah algoritma bisa mendapat gap negatif, dan success rate menjadi tidak bermakna. Karena itu, semua metrik di bagian ini dihitung terhadap optimum brute-force (§4).
 
-**b. Optimum paper bukan optimum terbaik untuk instance 16, 18, dan 19.**
-Brute-force menemukan solusi feasible yang lebih murah 0,016–0,046%. Jika optimality gap dihitung terhadap nilai paper, gap bisa bernilai negatif.
+| n dieset | Optimum brute-force | Optimum paper | Selisih paper |
+|---:|---:|---:|---:|
+| 3  | 443.483,21   | 443.483,21   | 0       |
+| 9  | 2.249.378,78 | 2.249.378,78 | 0       |
+| 13 | 5.223.596,12 | 5.223.596,12 | 0       |
+| 16 | 5.801.121,21 | 5.803.504,82 | +0,041% |
+| 18 | 5.962.911,99 | 5.963.876,62 | +0,016% |
+| 19 | 6.112.960,59 | 6.115.761,14 | +0,046% |
+
+**b. Kapasitas mesin belum dikurangi beban dieset fixed.**
+Semua dieset fixed dialokasikan ke `GP260`, tetapi `preprocess.py` memakai kapasitas penuh. Contohnya pada instance 3: dieset fixed sudah memakai 797,16 dari 953,03 jam. Hal ini **tidak mengubah optimum**, karena brute-force memberi solusi terbaik yang sama dengan kedua versi kapasitas. Yang berubah hanya luas ruang feasible:
+
+| n dieset | Fraksi feasible (data kelompok) | Fraksi feasible (jika dikurangi beban fixed) |
+|---:|---:|---:|
+| 3  | 50,0% | 12,5% |
+| 9  | 66,6% | 35,0% |
+| 13 | 72,6% | 36,0% |
+| 16 | 76,4% | 42,5% |
+| 18 | 80,7% | 43,8% |
+| 19 | 88,4% | 42,4% |
+
+Kelompok memutuskan memakai data apa adanya, dan hal ini dicatat sebagai keterbatasan (§4.3).
 
 **c. Masalahnya berstruktur 0/1 knapsack.**
 - Untuk setiap dieset, gen 0 selalu `GP260` dan gen 1 selalu `GP640`.
 - `work_hours` sebuah dieset sama di kedua mesin.
 - `GP640` lebih murah untuk hampir semua dieset, kecuali satu dieset di instance 19.
 
-Optimum selalu menempel di batas kapasitas. Untuk $n \ge 9$, `GP640` terpakai 99,4–99,9%. Untuk $n = 3$, yang ketat justru `GP260` (153,6 dari 155,9 jam).
-
-| n dieset | Kapasitas residual GP260 / GP640 (jam) | Fraksi feasible (kapasitas penuh) | Fraksi feasible (kapasitas residual) | Optimum brute-force | Optimum paper | Selisih paper |
-|---:|---:|---:|---:|---:|---:|---:|
-| 3  | 155,9 / 146,6     | 50,0% | 12,5% | 443.483,21   | 443.483,21   | 0       |
-| 9  | 385,2 / 378,8     | 66,6% | 35,0% | 2.249.378,78 | 2.249.378,78 | 0       |
-| 13 | 886,9 / 967,8     | 72,6% | 36,0% | 5.223.596,12 | 5.223.596,12 | 0       |
-| 16 | 1.090,1 / 1.189,6 | 76,4% | 42,5% | 5.801.121,21 | 5.803.504,82 | +0,041% |
-| 18 | 1.119,4 / 1.293,0 | 80,7% | 43,8% | 5.962.911,99 | 5.963.876,62 | +0,016% |
-| 19 | 1.099,5 / 1.456,2 | 88,4% | 42,4% | 6.112.960,59 | 6.115.761,14 | +0,046% |
-
-Optimum brute-force sama untuk kapasitas penuh maupun residual. Yang berubah hanya ruang feasible-nya, yang menjadi jauh lebih sempit (instance 3 hanya punya **1 solusi feasible dari 8**).
-
-Solusi yang hampir optimal juga sangat rapat. Di instance 18, solusi terbaik kedua hanya 0,002% di atas optimum, dan ada 24.177 solusi feasible dalam rentang 1% dari optimum. Karena itu, metrik "tepat optimum" saja tidak cukup (lihat §8).
+Untuk $n \ge 9$, optimum menempel di batas kapasitas `GP640`, dengan utilisasi 99,4–99,9%. Solusi yang hampir optimal juga sangat rapat. Di instance 18, solusi terbaik kedua hanya 0,002% di atas optimum. Karena itu, metrik "tepat optimum" saja tidak cukup (lihat §8).
 
 ---
 
 ## 2. Alasan Pemilihan Algoritma
 
-BPSO dipilih terutama karena **karakteristik datanya**, ditambah dua alasan praktis.
+BPSO dipilih terutama karena karakteristik datanya, ditambah dua alasan praktis.
 
 ### 2.1 Alasan dari karakteristik data
 
@@ -56,15 +63,15 @@ BPSO dipilih terutama karena **karakteristik datanya**, ditambah dua alasan prak
 ### 2.2 Alasan praktis
 
 - **Sesuai skeleton kelompok.** `src/algorithm/swarm.py` sudah mendefinisikan `ParticleSwarm` dengan parameter `inertia`, `cognitive`, dan `social`.
-- **Perbandingan dengan GA menjadi adil.** Representasi, fitness, dan penalty-nya sama persis dengan GA. Jadi kalau hasilnya berbeda, perbedaan itu murni berasal dari mekanisme pencarian: evolusi (crossover + mutasi) lawan swarm (pbest + gbest).
+- **Perbandingan dengan GA menjadi adil.** Data, representasi, fitness, dan penalty-nya sama persis dengan GA. Jadi kalau hasilnya berbeda, perbedaan itu murni berasal dari mekanisme pencarian: evolusi (crossover + mutasi) lawan swarm (pbest + gbest).
 
 ### 2.3 Alternatif yang dipertimbangkan
 
 | Algoritma | Kecocokan | Alasan tidak dipilih sebagai metode utama |
 |---|---|---|
-| **Ant Colony Optimization (ACO)** | Tinggi. Semut membangun solusi dieset per dieset, dengan heuristik $\eta_d = (c_{d,0} - c_{d,1}) / w_d$ yang sesuai dengan struktur knapsack. Kemungkinan lebih cepat menemukan optimum. | Memakai pengetahuan khusus masalah yang tidak dimiliki GA, sehingga perbandingannya kurang setara. Tidak cocok dengan skeleton yang ada dan harus ditulis dari nol. Bisa menjadi pembanding tambahan jika tugas membolehkan. |
-| **ABC, Firefly, Grey Wolf** | Sedang | Aslinya algoritma kontinu, jadi tetap butuh fungsi transfer biner seperti BPSO. Tidak ada keuntungan tambahan untuk data ini. |
-| **PSO kontinu + pembulatan** | Rendah | Pembulatan posisi membuat banyak partikel terjebak di bit yang sama. BPSO adalah cara baku untuk menurunkan PSO ke ruang biner. |
+| Ant Colony Optimization (ACO) | Tinggi. Semut membangun solusi dieset per dieset, dengan heuristik $\eta_d = (c_{d,0} - c_{d,1}) / w_d$ yang sesuai dengan struktur knapsack. Kemungkinan lebih cepat menemukan optimum. | Memakai pengetahuan khusus masalah yang tidak dimiliki GA, sehingga perbandingannya kurang setara. Tidak cocok dengan skeleton yang ada dan harus ditulis dari nol. Bisa menjadi pembanding tambahan jika tugas membolehkan. |
+| ABC, Firefly, Grey Wolf | Sedang | Aslinya algoritma kontinu, jadi tetap butuh fungsi transfer biner seperti BPSO. Tidak ada keuntungan tambahan untuk data ini. |
+| PSO kontinu + pembulatan | Rendah | Pembulatan posisi membuat banyak partikel terjebak di bit yang sama. BPSO adalah cara baku untuk menurunkan PSO ke ruang biner. |
 
 ---
 
@@ -74,21 +81,23 @@ BPSO dipilih terutama karena **karakteristik datanya**, ditambah dua alasan prak
 
 ```mermaid
 flowchart LR
-    A["Data asli<br/>QUBOS/*.json + info.csv"] --> B["preprocess_swarm.py<br/>kapasitas residual<br/>+ brute-force"]
-    B --> C["instances_swarm/<br/>instance_n_diesets.json"]
+    A["Data asli<br/>QUBOS/*.json + info.csv"] --> B["preprocess.py<br/>(kelompok)"]
+    B --> C["instances/<br/>instance_n_diesets.json"]
     C --> D["load_instance()<br/>ProblemInstance"]
-    D --> E["ParticleSwarm.run<br/>(problem, seed)"]
+    D --> O["with_true_optimum()<br/>optimum brute-force"]
+    O --> E["ParticleSwarm.run<br/>(problem, seed)"]
     E --> F["RunResult<br/>disimpan ke JSON"]
     F --> G["Analisis<br/>metrik, plot konvergensi,<br/>perbandingan GA"]
 ```
 
 Langkah per tahap:
 
-1. **Preprocessing** (§4): data QUBO asli diubah menjadi instance dengan kapasitas residual dan ground truth brute-force.
-2. **Load instance**: file JSON dibaca menjadi matriks `cost`, `work`, dan `capacity` lewat `load_instance()` milik kelompok.
-3. **Run BPSO** (§6): untuk setiap instance × konfigurasi × seed, swarm mencari genome terbaik sampai kriteria berhenti terpenuhi.
-4. **Simpan hasil**: setiap run menghasilkan satu `RunResult`, berisi genome terbaik, cost, status feasible, dan riwayat konvergensi.
-5. **Analisis** (§8): metrik dihitung terhadap optimum brute-force, lalu dibandingkan dengan baseline dan GA.
+1. **Preprocessing**: memakai `preprocess.py` milik kelompok tanpa perubahan logika.
+2. **Load instance**: file JSON dibaca menjadi matriks `cost`, `work`, dan `capacity` lewat `load_instance()`.
+3. **Optimum brute-force** (§4): `optimal_cost` dari paper diganti dengan optimum hasil enumerasi.
+4. **Run BPSO** (§6): untuk setiap instance × konfigurasi × seed, swarm mencari genome terbaik sampai kriteria berhenti terpenuhi.
+5. **Simpan hasil**: setiap run menghasilkan satu `RunResult`, berisi genome terbaik, cost, status feasible, dan riwayat konvergensi.
+6. **Analisis** (§8): metrik dihitung terhadap optimum brute-force, lalu dibandingkan dengan baseline dan GA.
 
 ### 3.2 Alur satu run BPSO
 
@@ -138,70 +147,38 @@ Kalau pbest dan gbest tidak sepakat (misalnya pbest = 0 dan gbest = 1), tarikann
 
 ---
 
-## 4. Preprocessing Khusus Swarm
+## 4. Data dan Ground Truth
 
-### 4.1 Lokasi dan cara pakai
+### 4.1 Data
 
-| | Path |
+BPSO memakai `data/processed/instances/instance_{n}_diesets.json` milik kelompok tanpa modifikasi. Instance di-load dengan `load_instance()` dari `src/problem.py`, sama seperti GA.
+
+### 4.2 Optimum brute-force (`src/optimum.py`)
+
+Modul ini berisi dua fungsi:
+
+| Fungsi | Keluaran |
 |---|---|
-| Script | `data/processed/preprocess_swarm.py` |
-| Output instance | `data/processed/instances_swarm/instance_{n}_diesets.json` |
-| Output ringkasan | `data/processed/instances_swarm_summary.csv` |
+| `brute_force(problem)` | `(optimal_cost, optimal_genome, n_feasible)` dari enumerasi semua genome |
+| `with_true_optimum(problem)` | salinan `ProblemInstance` dengan `optimal_cost` dan `optimal_genome` hasil brute-force |
 
-```bash
-python data/processed/preprocess_swarm.py
+Langkah `brute_force()`:
+1. Enumerasi semua genome. Indeks $0 \dots 2^n - 1$ diubah menjadi genome lewat `np.unravel_index` terhadap `choice_counts`.
+2. Evaluasi per blok 65.536 genome dengan `problem.evaluate_batch()` agar memori tetap kecil.
+3. Ambil genome feasible dengan cost terkecil.
+
+`ProblemInstance` adalah frozen dataclass, sehingga `with_true_optimum()` memakai `dataclasses.replace()`. Instance aslinya tidak berubah, dan seluruh kode lain (`base.py`, `RunResult`) tetap bekerja tanpa penyesuaian. Waktu komputasinya kurang dari 0,5 detik untuk instance 19.
+
+GA dapat memakai fungsi yang sama:
+
+```python
+from src.optimum import with_true_optimum
+problem = with_true_optimum(load_instance(path))
 ```
 
-Script ini **memakai ulang** fungsi `build_instance()` dari `preprocess.py` lewat `from preprocess import build_instance, SRC_DIR, INSTANCE_SIZES`. Import ini bisa jalan karena keduanya berada di folder yang sama. Hasil `build_instance()` kemudian diproses lanjut. Dengan cara ini tidak ada logika parsing yang diduplikasi, dan file milik kelompok tidak disentuh.
+### 4.3 Keterbatasan
 
-### 4.2 Langkah
-
-1. Panggil `build_instance(n, info)` untuk mendapatkan instance versi kelompok.
-2. Baca ulang `model.dieset_choices` dari JSON asli, lalu jumlahkan `work_required_hours` dieset fixed per mesin. Hasilnya `fixed_load_hours`.
-3. Hitung kapasitas residual: `capacity_hours = max_capacity_hours_per_timeslice − fixed_load_hours`.
-4. Lakukan brute-force atas semua $2^n$ genome, secara vektorisasi dengan numpy. Ambil genome feasible dengan cost terkecil sebagai ground truth.
-5. Simpan solusi paper sebagai pembanding, di bawah key `paper_*`.
-6. Validasi (lihat §4.4), lalu tulis JSON dan CSV ringkasan.
-
-### 4.3 Format output
-
-Skemanya **kompatibel** dengan `load_instance()` di `src/problem.py`, jadi tidak perlu loader baru. Field yang berubah atau bertambah:
-
-```jsonc
-{
-  "n_diesets": 3,
-  "n_machines": 2,
-  "n_fixed_diesets_ignored": 13,
-  "machines": [
-    {
-      "machine_id": 24, "machine_name": "GP260",
-      "capacity_hours": 155.87,          // RESIDUAL = total − beban dieset fixed
-      "capacity_hours_total": 953.03,    // baru: kapasitas asli
-      "fixed_load_hours": 797.16         // baru: beban dieset fixed
-    },
-    { "machine_id": 27, "machine_name": "GP640", "capacity_hours": 146.65, "capacity_hours_total": 146.65, "fixed_load_hours": 0.0 }
-  ],
-  "diesets": [ /* sama persis dengan versi kelompok */ ],
-  "ground_truth": {
-    "source": "brute_force",
-    "optimal_cost": 443483.21,                              // hasil brute-force
-    "optimal_assignment_dieset_to_machine": {"3": 24, "2": 27, "0": 27},
-    "n_feasible": 1,
-    "n_total": 8,
-    "paper_optimal_cost": 443483.21,                        // dari info.csv
-    "paper_optimal_bitstring": "...",
-    "paper_assignment_dieset_to_machine": {"3": 24, "2": 27, "0": 27}
-  }
-}
-```
-
-### 4.4 Validasi (`assert`)
-
-- Cost dari `optimal_assignment_dieset_to_machine`, jika dihitung ulang, sama dengan `optimal_cost`.
-- Solusi brute-force feasible terhadap kapasitas residual.
-- Solusi paper juga feasible terhadap kapasitas residual. Ini sudah dicek: beban `GP260` di solusi paper selalu di bawah kapasitas residualnya.
-- `optimal_cost ≤ paper_optimal_cost`.
-- Untuk $n \in \{3, 9, 13\}$, assignment brute-force sama dengan assignment paper.
+Kapasitas mesin pada data kelompok belum dikurangi beban dieset fixed (§1b). Optimumnya tetap sama, tetapi ruang feasible lebih longgar daripada kondisi sebenarnya. Akibatnya, feasibility rate pada percobaan ini cenderung lebih optimis dibanding kondisi pabrik yang sebenarnya.
 
 ---
 
@@ -259,7 +236,7 @@ Perbedaan perilakunya:
 
 ```text
 initialize():
-    assert semua dieset punya 2 pilihan
+    cek semua dieset punya 2 pilihan        # ValueError jika tidak
     X  ← random_genomes(S)                  # (S, n) bit acak
     V  ← U(−v_max, v_max)                   # (S, n)
     F  ← evaluate(X)                        # sekaligus update gbest di base
@@ -298,10 +275,9 @@ Semua parameter ini dikembalikan oleh `extra_params()`, sehingga tercatat di `Ru
 
 | File | Status | Isi |
 |---|---|---|
-| `data/processed/preprocess_swarm.py` | baru | preprocessing §4 |
-| `data/processed/instances_swarm/` | baru (hasil generate) | 6 instance kapasitas residual + ground truth brute-force |
 | `src/algorithm/swarm.py` | diisi | `ParticleSwarm(Algorithm)`: `__init__`, `extra_params`, `initialize`, `iterate`, helper `_inertia`, `_transfer` |
 | `src/algorithm/baseline.py` | baru | `RandomSearch(Algorithm)` dan `greedy_knapsack()` untuk baseline §8.3 |
+| `src/optimum.py` | baru | optimum brute-force (§4.2), bisa dipakai juga oleh GA |
 | `experiments/run_swarm.py` | baru | menjalankan seluruh percobaan §8, menyimpan hasil ke `results/swarm/` |
 | `data/processed/preprocess.py` | perbaikan path | `SRC_DIR` sebelumnya menunjuk ke `data/src/QUBOS`, yang tidak ada. Sekarang menunjuk ke `data/original/src/QUBOS`. Logikanya tidak diubah, dan output `instances/` tetap identik. |
 | `src/problem.py`, `src/algorithm/base.py` | tidak diubah | – |
@@ -310,10 +286,11 @@ Contoh pemakaian:
 
 ```python
 from src.problem import load_instance
+from src.optimum import with_true_optimum
 from src.algorithm import ParticleSwarm
 
-problem = load_instance("data/processed/instances_swarm/instance_19_diesets.json")
-pso = ParticleSwarm(swarm_size=40, transfer="vshape", max_evaluations=5000)
+problem = with_true_optimum(load_instance("data/processed/instances/instance_19_diesets.json"))
+pso = ParticleSwarm(swarm_size=40, transfer="sigmoid", max_evaluations=5000)
 result = pso.run(problem, seed=0)
 print(result.best_cost, result.feasible, (result.best_cost / problem.optimal_cost - 1) * 100)
 ```
@@ -328,22 +305,22 @@ Perlu diperhatikan juga, `load_instances()` di `src/problem.py` mengimpor `src.p
 
 ### 8.1 Konfigurasi
 
-- **Instance**: keenam instance di `instances_swarm/`.
+- **Instance**: keenam instance di `data/processed/instances/`, dengan optimum brute-force.
 - **Seed**: 30 seed (0–29) per konfigurasi per instance.
 - **Budget**: berhenti berdasarkan `max_evaluations`, dengan nilai yang sama untuk GA dan BPSO (usulan: 5.000 evaluasi). Budget ini kurang dari 1% ruang pencarian instance 19. Untuk $n \le 9$, budget ini sudah melebihi ruang pencariannya (paling banyak 512 kombinasi), jadi hasil instance 3 dan 9 hanya berfungsi sebagai sanity check.
 
 | Studi | Variasi | Parameter lain |
 |---|---|---|
 | Fungsi transfer | `sigmoid` vs `vshape` | default |
-| Jadwal inertia | konstan 0,7 vs linear 0,9 → 0,4 | transfer terbaik |
-| Ukuran swarm | 20, 40, 80 | budget evaluasi tetap |
-| `v_max` | 4, 6 | transfer terbaik |
+| Jadwal inertia | konstan 0,7 vs linear 0,9 → 0,4 | sigmoid dan vshape |
+| Ukuran swarm | 20, 40, 80 | sigmoid, budget evaluasi tetap |
+| `v_max` | 4, 6 | sigmoid |
 
 ### 8.2 Metrik
 
 | Metrik | Definisi |
 |---|---|
-| Success rate | % run dengan `best_cost` = optimum brute-force (toleransi 1e-3) |
+| Success rate | % run dengan `best_cost` = optimum brute-force |
 | Near-optimal rate | % run dengan gap ≤ 0,1% |
 | Optimality gap | $(\text{best\_cost} - \text{opt}) / \text{opt} \times 100\%$, dilaporkan mean, median, dan worst |
 | Feasibility rate | % run yang hasil akhirnya feasible |
@@ -379,13 +356,13 @@ Konfigurasi default adalah sigmoid, $w = 0{,}7$, $c_1 = c_2 = 1{,}5$, `v_max = 4
 
 | Konfigurasi | n = 13 | n = 16 | n = 18 | n = 19 |
 |---|---:|---:|---:|---:|
-| sigmoid | 93,3 | 36,7 | 13,3 | 16,7 |
-| sigmoid, inertia 0,9 → 0,4 | 80,0 | 26,7 | 20,0 | 10,0 |
-| V-shaped | 83,3 | 30,0 | 13,3 | 6,7 |
-| V-shaped, inertia 0,9 → 0,4 | 86,7 | 10,0 | 23,3 | 0,0 |
-| sigmoid, $S = 20$ | 90,0 | 30,0 | 16,7 | 20,0 |
-| sigmoid, $S = 80$ | 86,7 | 26,7 | 16,7 | 3,3 |
-| sigmoid, `v_max = 6` | 93,3 | 40,0 | 23,3 | 10,0 |
+| sigmoid | 86,7 | 33,3 | 23,3 | 10,0 |
+| sigmoid, inertia 0,9 → 0,4 | 83,3 | 40,0 | 13,3 | 3,3 |
+| V-shaped | 70,0 | 13,3 | 23,3 | 10,0 |
+| V-shaped, inertia 0,9 → 0,4 | 80,0 | 16,7 | 0,0 | 10,0 |
+| sigmoid, $S = 20$ | 96,7 | 36,7 | 6,7 | 16,7 |
+| sigmoid, $S = 80$ | 93,3 | 23,3 | 23,3 | 13,3 |
+| sigmoid, `v_max = 6` | 93,3 | 36,7 | 20,0 | 10,0 |
 | random search | 46,7 | 3,3 | 3,3 | 0,0 |
 | greedy (1 run) | 0 | 0 | 0 | 0 |
 
@@ -393,13 +370,13 @@ Konfigurasi default adalah sigmoid, $w = 0{,}7$, $c_1 = c_2 = 1{,}5$, `v_max = 4
 
 | Konfigurasi | n = 13 | n = 16 | n = 18 | n = 19 |
 |---|---:|---:|---:|---:|
-| sigmoid | 0,0018 | 0,0299 | 0,0085 | 0,0249 |
-| sigmoid, inertia 0,9 → 0,4 | 0,0068 | 0,0286 | 0,0096 | 0,0360 |
-| V-shaped | 0,0043 | 0,0408 | 0,0108 | 0,0499 |
-| V-shaped, inertia 0,9 → 0,4 | 0,0047 | 0,0398 | 0,0116 | 0,0389 |
-| sigmoid, $S = 20$ | 0,0024 | 0,0288 | 0,0087 | 0,0311 |
-| sigmoid, $S = 80$ | 0,0017 | 0,0295 | 0,0117 | 0,0376 |
-| sigmoid, `v_max = 6` | 0,0003 | 0,0270 | 0,0106 | 0,0321 |
+| sigmoid | 0,0021 | 0,0283 | 0,0076 | 0,0253 |
+| sigmoid, inertia 0,9 → 0,4 | 0,0037 | 0,0267 | 0,0103 | 0,0384 |
+| V-shaped | 0,0050 | 0,0413 | 0,0171 | 0,0489 |
+| V-shaped, inertia 0,9 → 0,4 | 0,0032 | 0,0350 | 0,0114 | 0,0387 |
+| sigmoid, $S = 20$ | 0,0017 | 0,0282 | 0,0108 | 0,0296 |
+| sigmoid, $S = 80$ | 0,0003 | 0,0285 | 0,0152 | 0,0370 |
+| sigmoid, `v_max = 6` | 0,0003 | 0,0264 | 0,0115 | 0,0334 |
 | random search | 0,0078 | 0,0697 | 0,0356 | 0,0872 |
 | greedy (1 run) | 0,1245 | 0,1385 | 0,2608 | 0,1011 |
 | *solusi paper* | *0* | *0,041* | *0,016* | *0,046* |
@@ -411,11 +388,11 @@ Plot di atas menunjukkan median gap terhadap jumlah evaluasi. Sumbu-y memakai sk
 **Pengamatan**
 
 1. Semua 1.440 run BPSO menghasilkan solusi feasible, dan gap terburuknya 0,11%. Penalty feasibility-first bekerja sesuai rancangan.
-2. BPSO jelas lebih baik daripada random search dengan budget yang sama. Di $n \ge 16$, gap rata-rata BPSO 1,7–4 kali lebih kecil. Persentase run random search dengan gap ≤ 0,1% juga turun menjadi 66,7% di $n = 19$, sedangkan BPSO tetap 96,7–100%. Dari plot terlihat bahwa perbedaannya mulai muncul setelah beberapa ratus evaluasi pertama. Pada tahap itu random search mulai mendatar, sementara BPSO terus turun.
+2. BPSO jelas lebih baik daripada random search dengan budget yang sama. Di $n \ge 16$, gap rata-rata BPSO 1,7–4,7 kali lebih kecil. Persentase run random search dengan gap ≤ 0,1% juga turun menjadi 66,7% di $n = 19$, sedangkan BPSO tetap 96,7–100%. Dari plot terlihat bahwa perbedaannya mulai muncul setelah beberapa ratus evaluasi pertama. Pada tahap itu random search mulai mendatar, sementara BPSO terus turun.
 3. Greedy rasio penghematan/jam selalu meleset 0,10–0,26%. Artinya, walaupun strukturnya mirip knapsack, pilihan dieset yang optimal tidak bisa didapat hanya dengan mengurutkan rasio.
-4. Rata-rata hasil BPSO sigmoid lebih baik daripada solusi paper di instance 16, 18, dan 19. Di $n = 18$, misalnya, gap rata-ratanya 0,0085% berbanding 0,016%.
+4. Rata-rata hasil BPSO sigmoid lebih baik daripada solusi paper di instance 16, 18, dan 19. Contohnya, di $n = 18$ gap rata-ratanya 0,0076% berbanding 0,016%. Varian V-shaped tidak lebih baik daripada solusi paper di ketiga instance tersebut.
 5. Success rate turun tajam mulai $n = 16$. Penyebabnya bukan solusi yang buruk, melainkan rapatnya solusi yang hanya berbeda 0,002–0,03% dari optimum (§1). Swarm sering berhenti di salah satu solusi tetangga tersebut.
-6. Fungsi transfer sigmoid konsisten sedikit lebih baik daripada V-shaped. Dugaan sementara: pada V-shaped, bit tidak berubah saat $v \approx 0$, sehingga swarm cepat "membeku" setelah pbest dan gbest sama.
+6. Fungsi transfer sigmoid menghasilkan gap rata-rata yang lebih kecil daripada V-shaped di keempat instance. Dugaan sementara: pada V-shaped, bit tidak berubah saat $v \approx 0$, sehingga swarm cepat "membeku" setelah pbest dan gbest sama.
 7. Inertia linear, ukuran swarm, dan `v_max` tidak memberi perbedaan yang konsisten. Selisihnya kecil dan arahnya berubah-ubah antar-instance. Dengan 30 seed, perbedaan ini kemungkinan belum signifikan secara statistik, jadi perlu diuji (misalnya Mann–Whitney U) sebelum diklaim di laporan.
 
 ---
@@ -424,19 +401,23 @@ Plot di atas menunjukkan median gap terhadap jumlah evaluasi. Sumbu-y memakai sk
 
 **Rencana kerja**
 
-- [x] Tulis `data/processed/preprocess_swarm.py` dan generate `instances_swarm/`
 - [x] Implementasikan `ParticleSwarm` di `src/algorithm/swarm.py`
+- [x] Optimum brute-force sebagai ground truth (`src/optimum.py`)
 - [x] Buat baseline random search dan greedy
 - [x] Jalankan percobaan §8 dan simpan `RunResult` ke JSON
 - [x] Buat plot konvergensi dan tabel metrik (§8.4)
 - [ ] Uji statistik antar-konfigurasi, dan BPSO vs GA setelah GA selesai
 - [ ] Isi README §4–§6 bagian swarm
 
+**Sudah disepakati**
+
+- Data: `data/processed/instances/` dari `preprocess.py`, untuk GA maupun BPSO.
+
 **Perlu disepakati dengan kelompok**
 
-1. **Data yang dipakai untuk perbandingan GA vs BPSO.** Kalau GA memakai `instances/` (kapasitas penuh) dan BPSO memakai `instances_swarm/` (kapasitas residual), perbandingannya tidak adil. Usulan: keduanya memakai `instances_swarm/`.
-2. **Ground truth**: brute-force atau nilai paper. Usulan: brute-force, dan nilai paper dicantumkan sebagai catatan.
-3. **Budget evaluasi dan jumlah seed** bersama (usulan: 5.000 evaluasi, 30 seed).
+1. **Ground truth**: GA sebaiknya juga memakai `with_true_optimum()`, supaya gap kedua algoritma dihitung terhadap optimum yang sama dan tidak ada gap negatif.
+2. **Budget evaluasi dan jumlah seed** bersama (usulan: 5.000 evaluasi, 30 seed).
+3. **Keterbatasan kapasitas** (§4.3) dicantumkan di laporan.
 
 ---
 
