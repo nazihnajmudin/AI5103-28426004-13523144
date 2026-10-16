@@ -1,4 +1,6 @@
-"""Percobaan BPSO pada instance swarm.
+"""Percobaan BPSO pada instance kelompok (data/processed/instances).
+
+Gap dihitung terhadap optimum brute-force, bukan optimal_cost dari paper.
 
 Jalankan dari root repo:
     python experiments/run_swarm.py
@@ -18,9 +20,10 @@ sys.path.insert(0, str(ROOT))
 
 from src.algorithm import ParticleSwarm, RunResult  # noqa: E402
 from src.algorithm.baseline import RandomSearch, greedy_knapsack  # noqa: E402
-from src.problem import load_instance  # noqa: E402
+from src.optimum import with_true_optimum  # noqa: E402
+from src.problem import ProblemInstance, load_instance  # noqa: E402
 
-DATA_DIR = ROOT / "data" / "processed" / "instances_swarm"
+DATA_DIR = ROOT / "data" / "processed" / "instances"
 OUT_DIR = ROOT / "results" / "swarm"
 
 # override dari default ParticleSwarm (sigmoid, w=0.7, c1=c2=1.5, v_max=4, S=40)
@@ -58,11 +61,18 @@ def batch_size(result: RunResult) -> int:
     return result.params.get("swarm_size", result.params.get("batch_size"))
 
 
-def run_all(seeds: int, budget: int) -> list[dict]:
-    problems = sorted(
-        (load_instance(p) for p in DATA_DIR.glob("instance_*_diesets.json")),
-        key=lambda p: p.n_diesets,
-    )
+def load_problems() -> tuple[list[ProblemInstance], dict[int, float]]:
+    """Instance dengan optimum brute-force + gap solusi paper terhadap optimum tersebut"""
+    problems, paper_gap = [], {}
+    for path in DATA_DIR.glob("instance_*_diesets.json"):
+        paper = load_instance(path)
+        problem = with_true_optimum(paper)
+        paper_gap[problem.n_diesets] = gap_pct(paper.optimal_cost, problem.optimal_cost)
+        problems.append(problem)
+    return sorted(problems, key=lambda p: p.n_diesets), paper_gap
+
+
+def run_all(problems: list[ProblemInstance], seeds: int, budget: int) -> list[dict]:
     algorithms = {name: ParticleSwarm(max_iterations=10**6, max_evaluations=budget, **cfg)
                   for name, cfg in CONFIGS.items()}
     algorithms["random"] = RandomSearch(max_iterations=10**6, max_evaluations=budget)
@@ -131,10 +141,9 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
     return summary.reset_index()
 
 
-def plot_convergence(df: pd.DataFrame) -> Path:
+def plot_convergence(df: pd.DataFrame, paper_gap: dict[int, float]) -> Path:
     # n = 3 dan 9 sudah 100% optimum di semua konfigurasi, tidak informatif untuk diplot
     sizes = [n for n in sorted(df.n_diesets.unique()) if n >= 13]
-    paper_gap = pd.read_csv(DATA_DIR.parent / "instances_swarm_summary.csv").set_index("n_diesets").paper_gap_pct
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 7.5), sharex=True, sharey=True)
     for ax, n in zip(axes.flat, sizes):
@@ -183,12 +192,13 @@ def main():
     args = parser.parse_args()
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame(run_all(args.seeds, args.budget))
+    problems, paper_gap = load_problems()
+    df = pd.DataFrame(run_all(problems, args.seeds, args.budget))
 
     summary = summarize(df)
     summary.to_csv(OUT_DIR / "summary.csv", index=False)
     df.drop(columns=["history", "batch"]).to_csv(OUT_DIR / "runs.csv", index=False)
-    plot_path = plot_convergence(df)
+    plot_path = plot_convergence(df, paper_gap)
 
     pd.set_option("display.width", 200)
     print()
