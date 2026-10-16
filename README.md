@@ -123,11 +123,11 @@ Untuk keenam instance pada dataset ini, setiap dieset flexible memiliki tepat du
 
 ### 3.2 Fitness Function
 
-Constraint yang perlu ditangani hanyalah capacity constraint, yaitu melalui quadratic penalty:
+Assignment constraint sudah terpenuhi oleh representasi, sehingga hanya capacity constraint yang ditangani melalui fungsi penalti. Fungsi fitness yang digunakan (semakin kecil semakin baik) adalah sebagai sebagai berikut:
 
-$$f(\text{gene}) = \sum_{i} \texttt{choices}[\text{gene}[i]].\texttt{total\_cost} \; + \; \lambda \sum_{m \in M} \max\!\big(0, \; \text{load}_m - h_m\big)^2$$
+$$f(\text{gene}) = \underbrace{\sum_i c_{i,\text{gene}[i]}}_{\text{objective}} \; + \; \lambda \underbrace{\sum_{m \in M} \max(0, \text{load}_m - h_m)^2}_{\text{penalti berjenjang}} \; + \; \lambda \underbrace{\mathbb{1}[\exists m: \text{load}_m > h_m]}_{\text{penalti feasibility}}$$
 
-dengan $\text{load}_m = \sum_{i \,:\, \text{gene}[i] \to m} \texttt{choices}[\text{gene}[i]].\texttt{work\_hours}$.
+dengan $c_{i,j}$ = `choices[j].total_cost` dari dieset $i$ dan $\text{load}_m = \sum_{i \,:\, \text{gene}[i] \to m} \texttt{choices}[\text{gene}[i]].\texttt{work\_hours}$.
 
 ---
 
@@ -137,7 +137,13 @@ lorem ipsum dolor sit amet
 
 ---
 
-## 5. Hasil dan Observasi
+## 5. Rancangan Percobaan
+
+lorem ipsum dolor sit amet
+
+---
+
+## 6. Hasil dan Observasi
 
 lorem ipsum dolor sit amet
 
