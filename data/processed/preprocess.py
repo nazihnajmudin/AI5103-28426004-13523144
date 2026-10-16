@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-SRC_DIR = Path(__file__).resolve().parent.parent / "src" / "QUBOS"
+SRC_DIR = Path(__file__).resolve().parent.parent / "original" / "src" / "QUBOS"
 OUT_DIR = Path(__file__).resolve().parent / "instances"
 INSTANCE_SIZES = [3, 9, 13, 16, 18, 19]
 
