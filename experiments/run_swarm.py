@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.algorithm import ParticleSwarm, RunResult  # noqa: E402
-from src.algorithm.baseline import RandomSearch, greedy_knapsack  # noqa: E402
+from src.algorithm.random_search import RandomSearch, greedy_knapsack  # noqa: E402
 from src.optimum import with_true_optimum  # noqa: E402
 from src.problem import ProblemInstance, load_instance  # noqa: E402
 

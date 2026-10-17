@@ -32,7 +32,10 @@ class RunResult:
     stop_reason: str
 
     history_best_cost: list[float] = field(default_factory=list, repr=False)
+    history_evaluations: list[int] = field(default_factory=list, repr=False)
     best_iteration: int = 0
+    evaluations_to_best: int = 0
+    config: str = "default"     # nama konfigurasi, diisi oleh runner
     machine_loads: list[float] = field(default_factory=list)
     assignment: dict[str, int] = field(default_factory=dict, repr=False)
 
@@ -76,7 +79,7 @@ class Algorithm:
         *,
         max_iterations: int = 200,
         max_evaluations: int | None = None,
-        patience: int | None = None,
+        patience: int | None = None,        # jumlah evaluasi tanpa perbaikan, None = mati
         penalty_weight: float | None = None,
     ) -> None:
         self.max_iterations = max_iterations
@@ -128,7 +131,7 @@ class Algorithm:
             self.best_cost = float(cost[i])
             self.best_genome = g[i].copy()
             self.best_iteration = self.iteration
-            self._stall = 0
+            self.best_evaluation = self.n_evaluations
 
         return fitness
 
@@ -139,14 +142,15 @@ class Algorithm:
         started = perf_counter()
         self.initialize()
         self._history.append(self.best_cost)
+        self._history_evals.append(self.n_evaluations)
 
         # Main Loop: iterate sampai salah satu kriteria stop terpenuhi
         stop_reason = self._stop_reason()
         while stop_reason is None:
             self.iteration += 1
-            self._stall += 1
             self.iterate()
             self._history.append(self.best_cost)
+            self._history_evals.append(self.n_evaluations)
             stop_reason = self._stop_reason()
         runtime = perf_counter() - started
 
@@ -167,7 +171,9 @@ class Algorithm:
             runtime_sec=runtime,
             stop_reason=stop_reason,
             history_best_cost=[float(x) for x in self._history],
+            history_evaluations=list(self._history_evals),
             best_iteration=self.best_iteration,
+            evaluations_to_best=self.best_evaluation,
             machine_loads=[float(x) for x in objective.loads],
             assignment={str(k): v for k, v in problem.assignment(self.best_genome).items()},
         )
@@ -194,18 +200,19 @@ class Algorithm:
         )
         self.iteration = 0
         self.n_evaluations = 0
-        self._stall = 0
         self.best_genome = np.zeros(problem.n_diesets, dtype=np.int64)
         self.best_fitness = np.inf
         self.best_cost = np.inf
         self.best_iteration = 0
+        self.best_evaluation = 0
         self._history: list[float] = []
+        self._history_evals: list[int] = []
 
     def _stop_reason(self) -> str | None:
         if self.iteration >= self.max_iterations:
             return "max_iterations"
         if self.max_evaluations is not None and self.n_evaluations >= self.max_evaluations:
             return "max_evaluations"
-        if self.patience is not None and self._stall >= self.patience:
+        if self.patience is not None and self.n_evaluations - self.best_evaluation >= self.patience:
             return "patience"
         return None

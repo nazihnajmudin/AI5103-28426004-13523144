@@ -6,12 +6,18 @@
     {
       "machine_id": 24,
       "machine_name": "GP260",
-      "capacity_hours": 2509.6136761032312
+      "capacity_hours": 886.8698017431705,
+      "capacity_hours_rounded": 886,
+      "max_capacity_hours": 2509.6136761032312,
+      "fixed_load_hours": 1622.7438743600608
     },
     {
       "machine_id": 27,
       "machine_name": "GP640",
-      "capacity_hours": 967.8054523156683
+      "capacity_hours": 967.8054523156683,
+      "capacity_hours_rounded": 967,
+      "max_capacity_hours": 967.8054523156683,
+      "fixed_load_hours": 0.0
     }
   ],
   "diesets": [
@@ -23,6 +29,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 153.57266466084454,
+          "work_hours_rounded": 154,
           "work_cost": 278120.0957007895,
           "transport_cost": 23071.72,
           "total_cost": 301191.81570078945
@@ -31,6 +38,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 153.57266466084454,
+          "work_hours_rounded": 154,
           "work_cost": 215923.16651314741,
           "transport_cost": 21484.06,
           "total_cost": 237407.2265131474
@@ -45,6 +53,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 51.17740636052053,
+          "work_hours_rounded": 52,
           "work_cost": 92682.28291890267,
           "transport_cost": 0.0,
           "total_cost": 92682.28291890267
@@ -53,6 +62,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 51.17740636052053,
+          "work_hours_rounded": 52,
           "work_cost": 71955.43334289188,
           "transport_cost": 2178.0,
           "total_cost": 74133.43334289188
@@ -67,6 +77,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 47.349902561818766,
+          "work_hours_rounded": 48,
           "work_cost": 85750.67353945378,
           "transport_cost": 0.0,
           "total_cost": 85750.67353945378
@@ -75,6 +86,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 47.349902561818766,
+          "work_hours_rounded": 48,
           "work_cost": 66573.96300191717,
           "transport_cost": 1584.0,
           "total_cost": 68157.96300191717
@@ -89,6 +101,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 108.50665695171226,
+          "work_hours_rounded": 109,
           "work_cost": 196505.55573955088,
           "transport_cost": 9900.0,
           "total_cost": 206405.55573955088
@@ -97,6 +110,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 108.50665695171226,
+          "work_hours_rounded": 109,
           "work_cost": 152560.35967410743,
           "transport_cost": 0.0,
           "total_cost": 152560.35967410743
@@ -111,6 +125,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 71.60341379724841,
+          "work_hours_rounded": 72,
           "work_cost": 129673.78238681688,
           "transport_cost": 594.0,
           "total_cost": 130267.78238681688
@@ -119,6 +134,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 71.60341379724841,
+          "work_hours_rounded": 72,
           "work_cost": 100674.39979893128,
           "transport_cost": 0.0,
           "total_cost": 100674.39979893128
@@ -133,6 +149,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 63.89939928225932,
+          "work_hours_rounded": 64,
           "work_cost": 115721.81210017162,
           "transport_cost": 1188.0,
           "total_cost": 116909.81210017162
@@ -141,6 +158,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 63.89939928225932,
+          "work_hours_rounded": 64,
           "work_cost": 89842.5553908566,
           "transport_cost": 0.0,
           "total_cost": 89842.5553908566
@@ -155,6 +173,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 127.89244829483631,
+          "work_hours_rounded": 128,
           "work_cost": 231613.22386194856,
           "transport_cost": 1233930.0,
           "total_cost": 1465543.2238619486
@@ -163,6 +182,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 127.89244829483631,
+          "work_hours_rounded": 128,
           "work_cost": 179816.78230253985,
           "transport_cost": 1223040.0,
           "total_cost": 1402856.7823025398
@@ -177,6 +197,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 4.712121212121213,
+          "work_hours_rounded": 5,
           "work_cost": 8533.651515151516,
           "transport_cost": 3342.2400000000002,
           "total_cost": 11875.891515151516
@@ -185,6 +206,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 4.712121212121213,
+          "work_hours_rounded": 5,
           "work_cost": 6625.242424242425,
           "transport_cost": 2867.04,
           "total_cost": 9492.282424242425
@@ -199,6 +221,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 7.911447099164871,
+          "work_hours_rounded": 8,
           "work_cost": 14327.630696587581,
           "transport_cost": 0.0,
           "total_cost": 14327.630696587581
@@ -207,6 +230,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 7.911447099164871,
+          "work_hours_rounded": 8,
           "work_cost": 11123.494621425809,
           "transport_cost": 99.0,
           "total_cost": 11222.494621425809
@@ -221,6 +245,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 170.92554720877965,
+          "work_hours_rounded": 171,
           "work_cost": 309546.16599509993,
           "transport_cost": 10824.0,
           "total_cost": 320370.16599509993
@@ -229,6 +254,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 170.92554720877965,
+          "work_hours_rounded": 171,
           "work_cost": 240321.31937554418,
           "transport_cost": 12988.800000000001,
           "total_cost": 253310.11937554416
@@ -243,6 +269,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 80.10521752837326,
+          "work_hours_rounded": 81,
           "work_cost": 145070.548943884,
           "transport_cost": 3696.0,
           "total_cost": 148766.548943884
@@ -251,6 +278,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 80.10521752837326,
+          "work_hours_rounded": 81,
           "work_cost": 112627.93584489281,
           "transport_cost": 4435.2,
           "total_cost": 117063.13584489281
@@ -265,6 +293,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 233.6356209150327,
+          "work_hours_rounded": 234,
           "work_cost": 423114.1094771242,
           "transport_cost": 313632.0,
           "total_cost": 736746.1094771242
@@ -273,6 +302,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 233.6356209150327,
+          "work_hours_rounded": 234,
           "work_cost": 328491.683006536,
           "transport_cost": 314265.6,
           "total_cost": 642757.283006536
@@ -287,6 +317,7 @@
           "machine_id": 24,
           "machine_name": "GP260",
           "work_hours": 424.2708658429868,
+          "work_hours_rounded": 425,
           "work_cost": 768354.5380416492,
           "transport_cost": 1235208.0,
           "total_cost": 2003562.5380416492
@@ -295,6 +326,7 @@
           "machine_id": 27,
           "machine_name": "GP640",
           "work_hours": 424.2708658429868,
+          "work_hours_rounded": 425,
           "work_cost": 596524.8373752394,
           "transport_cost": 1238699.4,
           "total_cost": 1835224.2373752394
@@ -319,6 +351,24 @@
       "20": 24,
       "2": 24,
       "5": 27
-    }
+    },
+    "brute_force_optimal_cost": 5223596.118974956,
+    "brute_force_assignment_dieset_to_machine": {
+      "8": 27,
+      "7": 24,
+      "1": 24,
+      "3": 27,
+      "22": 27,
+      "24": 27,
+      "11": 27,
+      "9": 27,
+      "0": 27,
+      "13": 24,
+      "20": 24,
+      "2": 24,
+      "5": 27
+    },
+    "n_feasible": 2951,
+    "n_total": 8192
   }
 }

@@ -6,6 +6,12 @@ from pathlib import Path
 
 import numpy as np
 
+# Pilihan optimum pembanding:
+#   "scip"        optimum paper (solver SCIP), model kapasitas dibulatkan seperti paper
+#   "brute-force" optimum hasil enumerasi semua genome, model tanpa pembulatan
+#   "both"        seperti "brute-force", ditambah solusi SCIP sebagai garis pembanding di plot
+OPTIMUM_OPTIONS = ("scip", "brute-force", "both")
+
 
 @dataclass(frozen=True)
 class Objective:
@@ -44,6 +50,7 @@ class ProblemInstance:
     machine_index: np.ndarray     # (n_diesets, n_choices)
     optimal_cost: float           # reference optimal dari paper
     optimal_genome: np.ndarray | None = field(default=None, repr=False)
+    brute_force_optimal_cost: float | None = None   # optimum real hasil enumerasi
     feasibility_tolerance: float = 1e-6
 
     @property
@@ -107,8 +114,15 @@ class ProblemInstance:
         return float(lo), float(hi)
 
 
-def load_instance(path: str | Path) -> ProblemInstance:
-    """Baca satu file: `data/processed/instances/instance_*.json`"""
+def load_instance(path: str | Path, optimum: str = "both") -> ProblemInstance:
+    """Baca satu file: `data/processed/instances/instance_*.json`
+
+    `optimum="scip"` memakai kapasitas dan beban yang dibulatkan (model paper),
+    selain itu memakai nilai aslinya.
+    """
+    if optimum not in OPTIMUM_OPTIONS:
+        raise ValueError(f"optimum harus salah satu dari {OPTIMUM_OPTIONS}")
+    suffix = "_rounded" if optimum == "scip" else ""
     path = Path(path)
     with open(path) as f:
         raw = json.load(f)
@@ -116,7 +130,7 @@ def load_instance(path: str | Path) -> ProblemInstance:
     machines = raw["machines"]
     machine_ids = np.array([m["machine_id"] for m in machines], dtype=np.int64)
     machine_pos = {int(mid): i for i, mid in enumerate(machine_ids)}
-    capacity = np.array([m["capacity_hours"] for m in machines], dtype=float)
+    capacity = np.array([m["capacity_hours" + suffix] for m in machines], dtype=float)
 
     diesets = raw["diesets"]
     n_diesets = len(diesets)
@@ -132,7 +146,7 @@ def load_instance(path: str | Path) -> ProblemInstance:
         choice_counts[i] = len(d["choices"])
         for j, c in enumerate(d["choices"]):
             cost[i, j] = c["total_cost"]
-            work[i, j] = c["work_hours"]
+            work[i, j] = c["work_hours" + suffix]
             machine_index[i, j] = machine_pos[int(c["machine_id"])]
 
     gt = raw["ground_truth"]
@@ -161,13 +175,14 @@ def load_instance(path: str | Path) -> ProblemInstance:
         machine_index=machine_index,
         optimal_cost=float(gt["optimal_cost"]),
         optimal_genome=optimal_genome,
+        brute_force_optimal_cost=gt.get("brute_force_optimal_cost"),
     )
 
 
-def load_instances(directory: str | Path | None = None) -> list[ProblemInstance]:
+def load_instances(directory: str | Path | None = None, optimum: str = "both") -> list[ProblemInstance]:
     """Baca semua instance: kecil -> besar (3 -> 19 dieset)"""
     from src.paths import INSTANCES_DIR
 
     directory = Path(directory) if directory is not None else INSTANCES_DIR
-    instances = [load_instance(p) for p in directory.glob("instance_*_diesets.json")]
+    instances = [load_instance(p, optimum) for p in directory.glob("instance_*_diesets.json")]
     return sorted(instances, key=lambda inst: inst.n_diesets)
