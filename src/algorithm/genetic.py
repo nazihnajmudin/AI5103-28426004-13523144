@@ -86,23 +86,23 @@ class GeneticAlgorithm(Algorithm):
         size = len(self.population)
 
         if self.selection == "tournament":
-            # ambil tournament_size kandidat acak, pemenang = fitness terkecil
+            # ambil tournament_size kandidat acak -> pemenang = fitness terkecil
             candidates = self.rng.integers(0, size, size=(n, self.tournament_size))
             winners = np.argmin(self.fitness[candidates], axis=1)
             return candidates[np.arange(n), winners]
 
         if self.selection == "roulette":
-            # peluang sebanding dengan selisih ke fitness terburuk
+            # peluang -> selisih ke fitness terburuk
             weight = self.fitness.max() - self.fitness + 1e-9
         else:
-            # rank: terbaik dapat bobot `size`, terburuk dapat bobot 1
+            # rank: terbaik dapat bobot size, terburuk dapat bobot 1
             rank = np.empty(size)
             rank[np.argsort(self.fitness)] = np.arange(size)
             weight = size - rank
         return self.rng.choice(size, size=n, p=weight / weight.sum())
 
     def _crossover(self, parent_a: np.ndarray, parent_b: np.ndarray) -> np.ndarray:
-        """Gabungkan dua parent jadi satu anak"""
+        """Menggabungkan dua parent menjadi satu anak"""
         n = len(parent_a)
 
         if self.crossover == "one_point":
@@ -125,7 +125,7 @@ class GeneticAlgorithm(Algorithm):
         hit = np.flatnonzero(self.rng.random(self.n_genes) < rate)
 
         if self.mutation == "bit_flip":
-            # pindahkan dieset ke pilihan mesin lain
+            # move dieset ke pilihan mesin lain
             counts = self.choice_counts[hit]
             offspring[hit] = (offspring[hit] + self.rng.integers(1, counts)) % counts
         else:
