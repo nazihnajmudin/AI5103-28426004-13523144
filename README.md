@@ -208,7 +208,7 @@ Setiap konfigurasi dijalankan pada keenam instance sebanyak 30 run per instance.
 - Konfigurasi selain default hanya mengubah satu proses atau parameter. 
 - Konfigurasi terbaik tiap algoritma ditentukan dari rata-rata lintas instance, dengan urutan prioritas % feasible tertinggi, % near-optimal tertinggi, lalu gap rata-rata terkecil. Konfigurasi terbaik inilah yang dibandingkan antar algoritma pada `comparison.ipynb`.
 
-### 5.3 Metrik
+### 5.3 Metrik Evaluasi
 
 | Metrik | Definisi |
 |---|---|
