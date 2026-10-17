@@ -1,5 +1,3 @@
-"""Path direktori repositori."""
-
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -8,7 +6,7 @@ DATA_DIR = REPO_ROOT / "data"
 INSTANCES_DIR = DATA_DIR / "processed" / "instances"
 INSTANCES_SUMMARY = DATA_DIR / "processed" / "instances_summary.csv"
 
-RESULTS_DIR = REPO_ROOT / "results"
+RESULTS_DIR = REPO_ROOT / "exp_results"
 RUNS_DIR = RESULTS_DIR / "runs"
 TABLES_DIR = RESULTS_DIR / "tables"
 FIGURES_DIR = RESULTS_DIR / "figures"

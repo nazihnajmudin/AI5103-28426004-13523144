@@ -7,9 +7,9 @@ from pathlib import Path
 import numpy as np
 
 # Pilihan optimum pembanding:
-#   "scip"        optimum paper (solver SCIP), model kapasitas dibulatkan seperti paper
-#   "brute-force" optimum hasil enumerasi semua genome, model tanpa pembulatan
-#   "both"        seperti "brute-force", ditambah solusi SCIP sebagai garis pembanding di plot
+#   "scip"        optimum paper (solver SCIP), kapasitas dibulatkan
+#   "brute-force" optimum hasil enumerasi semua genome, tanpa pembulatan
+#   "both"        "brute-force" + solusi SCIP sebagai pembanding di plot
 OPTIMUM_OPTIONS = ("scip", "brute-force", "both")
 
 
@@ -115,11 +115,7 @@ class ProblemInstance:
 
 
 def load_instance(path: str | Path, optimum: str = "both") -> ProblemInstance:
-    """Baca satu file: `data/processed/instances/instance_*.json`
-
-    `optimum="scip"` memakai kapasitas dan beban yang dibulatkan (model paper),
-    selain itu memakai nilai aslinya.
-    """
+    """Baca satu file: `data/processed/instances/instance_*.json`"""
     if optimum not in OPTIMUM_OPTIONS:
         raise ValueError(f"optimum harus salah satu dari {OPTIMUM_OPTIONS}")
     suffix = "_rounded" if optimum == "scip" else ""
