@@ -195,7 +195,7 @@ Optimum pembanding dipilih melalui konstanta `OPTIMUM` di setiap notebook.
 
 Hasil pada repositori ini menggunakan `both`.
 
-### 5.2 Protokol
+### 5.2 Konfigurasi Percobaan
 
 Setiap konfigurasi dijalankan pada keenam instance sebanyak 30 run per instance. Seed setiap run diacak dari master seed 2026, dan daftar seed yang sama dipakai untuk semua konfigurasi. Setiap run berhenti setelah 5.000 evaluasi fitness, tanpa patience.
 
