@@ -12,7 +12,7 @@ from src.problem import ProblemInstance
 
 
 def make_seeds(master_seed: int, n_runs: int) -> list[int]:
-    """n_runs seed yang diundi dari satu master seed."""
+    """n_runs seed, diacak dari master seed"""
     rng = np.random.default_rng(master_seed)
     return [int(s) for s in rng.integers(0, 2**31 - 1, size=n_runs)]
 
@@ -27,11 +27,9 @@ def run_experiment(
     seeds: list[int],
     runs_dir: Path = RUNS_DIR,
 ) -> None:
-    """Jalankan setiap konfigurasi pada semua instance x semua seed, simpan ke disk.
-    File hasil yang sudah ada akan ditimpa.
-
-    `configs` = {nama_konfigurasi: objek algoritma}. Objek boleh dipakai ulang
-    karena `run()` selalu mereset state-nya.
+    """
+    Run setiap konfigurasi pada semua instance x semua seed.
+    `configs` = {nama_konfigurasi: objek algoritma}. 
     """
     for config, algo in configs.items():
         for inst in instances:
@@ -43,7 +41,7 @@ def run_experiment(
 
 
 def load_results(algorithm: str | None = None, runs_dir: Path = RUNS_DIR) -> list[RunResult]:
-    """Baca hasil run dari disk. `algorithm=None` berarti semua algoritma."""
+    """Baca hasil run dari disk. `algorithm=None` berarti semua algoritma"""
     runs_dir = Path(runs_dir)
     folder = runs_dir if algorithm is None else runs_dir / algorithm
     results = [RunResult.load(path) for path in sorted(folder.rglob("seed_*.json"))]

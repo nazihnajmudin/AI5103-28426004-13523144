@@ -1,13 +1,7 @@
-"""Plot percobaan.
-
+"""
 Dua jenis plot:
   1. per konfigurasi  : sebaran hasil antar seed, x = instance
   2. antar grup       : grup = konfigurasi (dalam satu algoritma) atau algoritma
-                        (best config tiap algoritma), dipilih lewat argumen `by`
-
-Gap dalam persen terhadap optimum pilihan `optimum`. Jika `optimum="both"`, solusi
-SCIP (paper) ikut digambar sebagai garis putus-putus. Sumbu gap memakai skala
-symlog karena gap-nya sangat kecil (sering < 0,01%) dan bisa 0.
 """
 
 from __future__ import annotations
@@ -40,7 +34,7 @@ SCALABILITY_METRICS = [
     "pct_feasible", "pct_near_optimal", "cost_ratio_best", "gap_mean",
     "pct_optimum_found", "runtime_mean", "iterations_to_best_mean", "evaluations_to_best_mean",
 ]
-GAP_LINTHRESH = 1e-3  # di bawah 0,001% sumbu gap dibuat linear
+GAP_LINTHRESH = 1e-3  # di bawah 0,001% -> gap dibuat linear
 SCIP_STYLE = dict(color="dimgray", ls="--", lw=1.2, label="solusi SCIP (paper)")
 
 
@@ -67,7 +61,7 @@ def _scip_gap(inst: ProblemInstance, optimum: str) -> float:
 
 
 def _figure_legend(fig, axes) -> None:
-    """Satu legend di kanan figure, gabungan dari semua panel."""
+    """Satu legend di kanan figure, gabungan dari semua panel"""
     handles, labels = [], []
     for ax in np.ravel(axes):
         for h, label in zip(*ax.get_legend_handles_labels()):
@@ -78,9 +72,10 @@ def _figure_legend(fig, axes) -> None:
         fig.legend(handles, labels, loc="center left", bbox_to_anchor=(1.0, 0.5))
 
 
-# ------------------------------------------------------------------ per konfigurasi
+# ----- PER KONFIGURASI -----
+
 def plot_config_distribution(df: pd.DataFrame, title: str, optimum: str):
-    """Satu konfigurasi: sebaran hasil 30 seed di tiap instance."""
+    """Satu konfigurasi: sebaran hasil 30 seed di tiap instance"""
     sizes = sorted(df.n_diesets.unique())
     fig, axes = plt.subplots(2, 2, figsize=(11, 7))
 
@@ -113,7 +108,7 @@ def plot_config_distribution(df: pd.DataFrame, title: str, optimum: str):
         if metric == "gap_pct":
             _gap_axis(ax, optimum)
             if optimum == "both":
-                # garis pendek di tiap kotak: posisi solusi SCIP untuk instance itu
+                # posisi solusi SCIP untuk instance itu
                 scip = [df[df.n_diesets == n].scip_gap_pct.iloc[0] for n in sizes]
                 ax.hlines(scip, np.arange(1, len(sizes) + 1) - 0.4, np.arange(1, len(sizes) + 1) + 0.4, **SCIP_STYLE)
                 ax.legend(fontsize=8)
@@ -128,7 +123,7 @@ def plot_config_distribution(df: pd.DataFrame, title: str, optimum: str):
 
 
 def plot_seed_convergence(results: list[RunResult], instances: list[ProblemInstance], title: str, optimum: str):
-    """Satu konfigurasi: kurva konvergensi tiap seed (tipis) dan mediannya (tebal)."""
+    """Satu konfigurasi: kurva konvergensi tiap seed (tipis) dan mediannya (tebal)"""
     fig, axes = plt.subplots(2, 3, figsize=(13, 6.5))
     for ax, inst in zip(axes.ravel(), instances):
         ref = reference_cost(inst, optimum)
@@ -148,9 +143,10 @@ def plot_seed_convergence(results: list[RunResult], instances: list[ProblemInsta
     return fig
 
 
-# ------------------------------------------------------------------ antar grup
+# ----- ANTAR GRUP -----
+
 def _median_curve(runs: list[RunResult], reference: float) -> tuple[np.ndarray, np.ndarray]:
-    """Median gap per iterasi. Run yang lebih pendek diperpanjang dengan nilai terakhirnya."""
+    """Median gap per iterasi. Run yang lebih pendek diperpanjang dengan nilai terakhirnya"""
     longest = max(runs, key=lambda r: len(r.history_evaluations))
     length = len(longest.history_evaluations)
     curves = []
@@ -161,7 +157,7 @@ def _median_curve(runs: list[RunResult], reference: float) -> tuple[np.ndarray, 
 
 
 def plot_group_convergence(results: list[RunResult], instances: list[ProblemInstance], by: str, title: str, optimum: str):
-    """Median konvergensi tiap grup (`by` = "config" atau "algorithm"), satu panel per instance."""
+    """Median konvergensi tiap grup, satu panel per instance"""
     groups = sorted({getattr(r, by) for r in results})
     fig, axes = plt.subplots(2, 3, figsize=(13, 7))
     for ax, inst in zip(axes.ravel(), instances):
@@ -183,7 +179,7 @@ def plot_group_convergence(results: list[RunResult], instances: list[ProblemInst
 
 def plot_group_scalability(summary: pd.DataFrame, by: str, title: str, optimum: str,
                            metrics: list[str] = SCALABILITY_METRICS):
-    """Metrik ringkasan terhadap jumlah dieset, satu garis per grup."""
+    """Metrik ringkasan terhadap jumlah dieset, satu garis per grup"""
     groups = sorted(summary[by].unique())
     sizes = sorted(summary.n_diesets.unique())
     scip = summary.groupby("n_diesets")[["scip_gap_pct", "scip_cost_ratio"]].first().loc[sizes]
@@ -218,7 +214,7 @@ def plot_group_scalability(summary: pd.DataFrame, by: str, title: str, optimum: 
 
 
 def plot_group_distribution(df: pd.DataFrame, metric: str, by: str, title: str, optimum: str):
-    """Sebaran satu metrik antar seed, x = grup, satu panel per instance."""
+    """Sebaran satu metrik antar seed, x = grup, satu panel per instance"""
     groups = sorted(df[by].unique())
     sizes = sorted(df.n_diesets.unique())
     fig, axes = plt.subplots(2, 3, figsize=(13, 7.5))

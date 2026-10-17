@@ -1,14 +1,10 @@
-"""Evaluasi hasil run jadi tabel: satu baris per run, ringkasan per konfigurasi x instance,
-lalu ranking konfigurasi.
-
+"""
 Metrik mengikuti paper (Schmidbauer et al., 2025):
   - % feasible            (Fig. 3 paper)
   - % near-optimal        gap <= 1% dibagi jumlah run feasible (Fig. 4 paper)
   - rasio cost terbaik    cost feasible terendah / optimum (Fig. 5 paper)
   - optimality gap
-Tambahan: waktu eksekusi dan jumlah iterasi/evaluasi.
-
-Optimum pembanding dipilih lewat argumen `optimum` (lihat `OPTIMUM_OPTIONS` di problem.py).
+Tambahan: waktu eksekusi dan jumlah iterasi/evaluasi
 """
 
 from __future__ import annotations
@@ -25,7 +21,7 @@ NEAR_OPTIMAL_PCT = 1.0  # gap <= 1%, definisi Schmidbauer et al. (2025)
 
 
 def reference_cost(inst: ProblemInstance, optimum: str) -> float:
-    """Optimum pembanding: SCIP (paper) atau brute-force ("brute-force" dan "both")."""
+    """Optimum pembanding: "scip" (paper) atau brute-force ("brute-force" dan "both")."""
     if optimum not in OPTIMUM_OPTIONS:
         raise ValueError(f"optimum harus salah satu dari {OPTIMUM_OPTIONS}")
     return inst.optimal_cost if optimum == "scip" else inst.brute_force_optimal_cost
@@ -37,11 +33,7 @@ def gap_pct(cost: float, inst: ProblemInstance, optimum: str) -> float:
 
 
 def runs_to_frame(results: list[RunResult], instances: list[ProblemInstance], optimum: str) -> pd.DataFrame:
-    """Satu baris per run, lengkap dengan metriknya. Gap dalam persen.
-
-    Kolom `scip_gap_pct` = gap solusi SCIP (paper) ke optimum pembanding, dipakai
-    sebagai garis pembanding di plot saat `optimum="both"`.
-    """
+    """Satu baris per run + metriknya"""
     by_key = {inst.key: inst for inst in instances}
 
     rows = []
@@ -76,7 +68,7 @@ def runs_to_frame(results: list[RunResult], instances: list[ProblemInstance], op
 
 
 def summarize(df: pd.DataFrame) -> pd.DataFrame:
-    """Ringkasan per (algoritma, konfigurasi, instance). Statistik gap dari run feasible saja."""
+    """Ringkasan per (algoritma, konfigurasi, instance)"""
     rows = []
     for (algo, config, n), g in df.groupby(["algorithm", "config", "n_diesets"], sort=False):
         feas = g[g.feasible]
@@ -110,8 +102,10 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
 
 def rank_configs(summary: pd.DataFrame) -> pd.DataFrame:
     """Rata-rata metrik lintas instance per konfigurasi, diurutkan dari yang terbaik.
-
-    Urutan: % feasible tertinggi, lalu % near-optimal tertinggi, lalu gap rata-rata terkecil.
+    Urutan: 
+        1. % feasible tertinggi, 
+        2. % near-optimal tertinggi,
+        3. gap rata-rata terkecil.
     """
     cols = [
         "pct_feasible", "pct_near_optimal", "gap_mean", "gap_max", "pct_optimum_found",
@@ -128,7 +122,7 @@ def rank_configs(summary: pd.DataFrame) -> pd.DataFrame:
 
 
 def best_configs(ranking: pd.DataFrame) -> dict[str, str]:
-    """{algoritma: konfigurasi terbaik} dari tabel `rank_configs`."""
+    """Best config dari tabel `rank_configs`."""
     best = ranking[ranking["rank"] == 1]
     return dict(zip(best.algorithm, best.config))
 
