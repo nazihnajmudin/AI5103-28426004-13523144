@@ -1,7 +1,7 @@
 [project]
-name = "flyte-2-bid"
+name = "ai5103-path-matters"
 version = "0.1.0"
-description = ""
+description = "Genetic Algorithm dan Binary PSO untuk alokasi dieset pada dataset Path Matters (AI5103)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,4 +10,5 @@ dependencies = [
     "matplotlib>=3.9",
     "ipykernel>=6.29",
     "nbformat>=5.10",
+    "scipy>=1.13",
 ]
