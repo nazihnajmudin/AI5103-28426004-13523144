@@ -9,10 +9,8 @@ Jalankan dari root repo:
     uv run python experiments/run_all.py --save          # sekaligus simpan output ke file notebook
 """
 
-import argparse
 import sys
 from pathlib import Path
-from time import perf_counter
 
 import nbformat
 from nbclient import NotebookClient
@@ -21,38 +19,29 @@ EXPERIMENTS_DIR = Path(__file__).resolve().parent
 ORDER = ["random_search", "swarm", "genetic", "comparison"]
 
 
-def run_notebook(name: str, save: bool) -> float:
+def run_notebook(name: str, save: bool) -> None:
     path = EXPERIMENTS_DIR / f"{name}.ipynb"
     nb = nbformat.read(path, as_version=4)
-    started = perf_counter()
     client = NotebookClient(nb, timeout=3600, kernel_name="python3",
                             resources={"metadata": {"path": str(EXPERIMENTS_DIR)}})
     client.execute()
     if save:
         nbformat.write(nb, path)
-    return perf_counter() - started
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("notebooks", nargs="*", help=f"notebook yang dijalankan, default semua: {' '.join(ORDER)}")
-    parser.add_argument("--save", action="store_true", help="simpan output sel ke file notebook")
-    args = parser.parse_args()
+    args = sys.argv[1:]
+    save = "--save" in args
+    chosen = [a for a in args if a != "--save"]
 
-    unknown = set(args.notebooks) - set(ORDER)
-    if unknown:
-        parser.error(f"notebook tidak dikenal: {', '.join(sorted(unknown))}")
-    notebooks = [n for n in ORDER if not args.notebooks or n in args.notebooks]
-    for name in notebooks:
-        print(f"[run] {name}.ipynb ...", flush=True)
-        try:
-            elapsed = run_notebook(name, args.save)
-        except Exception as exc:
-            print(f"[gagal] {name}.ipynb: {exc}", file=sys.stderr)
-            sys.exit(1)
-        print(f"[ok]  {name}.ipynb ({elapsed:.0f} detik)")
+    for name in ORDER:
+        if chosen and name not in chosen:
+            continue
+        print(f"menjalankan {name}.ipynb ...")
+        run_notebook(name, save)
+        print(f"selesai {name}.ipynb")
 
-    print("\nTabel di exp_results/tables/, gambar di exp_results/figures/")
+    print("Tabel di exp_results/tables/, gambar di exp_results/figures/")
 
 
 if __name__ == "__main__":

@@ -159,7 +159,23 @@ Setiap generasi memilih pasangan parent, membentuk satu anak per pasangan melalu
 - Roulette wheel menggunakan bobot $f_{max} - f$ untuk meminimalkan fitness. 
 - Rank selection memberikan bobot dari $P$ untuk individu terbaik sampai 1 untuk individu terburuk secara linear, dengan $P$ merupakan ukuran populasi.
 
+Dasar penetapan nilai default:
+
+| Parameter | Nilai | Dasar |
+|---|---|---|
+| Ukuran populasi | 40 | sama dengan ukuran swarm BPSO, dan dengan budget 5.000 evaluasi memberi sekitar 130 generasi |
+| Crossover | uniform | urutan dieset pada kromosom tidak bermakna, sehingga gen yang bersebelahan tidak perlu diwariskan bersama |
+| $p_c$ | 0,9 | sebagian besar anak dibentuk dari rekombinasi dua parent, nilai yang umum dipakai pada GA (Goldberg, 1989) |
+| Mutasi | bit-flip | setiap dieset hanya memiliki dua pilihan mesin, sehingga mutasi cukup memindahkan dieset ke mesin lain |
+| $p_m$ | $1/n$ | rata-rata satu gen berubah per anak, cukup untuk keluar dari solusi parent tanpa merusak solusi yang sudah baik |
+| Tournament | ukuran 3 | tekanan seleksi sedang dengan ukuran turnamen kecil |
+| Elitisme | 2 | solusi terbaik tidak pernah hilang, dan jumlahnya kecil agar tidak mendominasi populasi |
+
+Pengaruh operator dan ukuran populasi kemudian diuji melalui analisis sensitivitas pada bagian 5.2.
+
 ### 4.2 Binary Particle Swarm Optimization
+
+BPSO dipilih karena karakteristik datanya. Setiap dieset flexible hanya memiliki dua pilihan mesin, sehingga ruang pencariannya berupa hypercube biner. PSO standar dirancang untuk ruang kontinu, sedangkan BPSO dirancang khusus untuk ruang biner: satu dimensi partikel mewakili satu dieset, dan kecepatan menentukan peluang dieset tersebut dialokasikan ke mesin kedua. Assignment constraint sudah terpenuhi oleh representasi, sehingga tidak diperlukan operator perbaikan, dan representasi, fitness, serta penaltinya sama persis dengan GA. Dimensi masalah juga kecil (3 sampai 19), sehingga kelemahan BPSO pada dimensi tinggi tidak muncul. Optimum berada di dekat batas kapasitas mesin, sehingga pencarian membutuhkan kendali eksplorasi dan eksploitasi, yang pada BPSO diatur melalui inertia, $v_{max}$, dan fungsi transfer.
 
 Kecepatan partikel $i$ pada dimensi $d$ diperbarui dengan
 
@@ -173,7 +189,7 @@ lalu dibatasi pada $[-v_{max}, v_{max}]$, dengan $p_i$ posisi terbaik partikel $
 | V-shaped | $T(v) = \lvert \tanh(v) \rvert$ | $x_{id}$ dibalik jika $r < T(v_{id})$ |
 
 - Inertia $w$ dapat bernilai konstan ataupun turun secara linear dari $w_0$ ke $w_{end}$ sepanjang budget evaluasi.
-- Konfigurasi default menggunakan transfer sigmoid, $w = 0{,}7$, $c_1 = c_2 = 1{,}5$, $v_{max} = 4$, dan swarm 40 partikel.
+- Konfigurasi default menggunakan transfer sigmoid sesuai BPSO asli (Kennedy & Eberhart, 1997), $w = 0{,}7$ yang berada pada rentang inertia yang dianjurkan Shi & Eberhart (1998), $c_1 = c_2 = 1{,}5$ agar tarikan ke posisi terbaik partikel dan swarm seimbang, $v_{max} = 4$ sehingga $S(v)$ tetap berada di antara 0,018 dan 0,982 dan peluang bit tidak menempel di 0 atau 1, serta swarm 40 partikel.
 
 ### 4.3 Random Search
 
@@ -205,7 +221,7 @@ Setiap konfigurasi dijalankan pada keenam instance sebanyak 30 run per instance.
 | BPSO | default, inertia linear, V-shaped, V-shaped dengan inertia linear, swarm 20, swarm 80, $v_{max} = 6$ |
 | GA | default, roulette wheel, rank, one-point, two-point, swap, populasi 20, populasi 80 |
 
-- Konfigurasi selain default hanya mengubah satu proses atau parameter. 
+- Konfigurasi selain default hanya mengubah satu proses atau parameter dari default, sehingga perbandingan antar konfigurasi sekaligus menjadi analisis sensitivitas parameter. Nilai default ditetapkan seperti pada bagian 4, lalu pengaruh setiap perubahan diukur dari hasil percobaan.
 - Konfigurasi terbaik tiap algoritma ditentukan dari rata-rata lintas instance, dengan urutan prioritas % feasible tertinggi, % near-optimal tertinggi, lalu gap rata-rata terkecil. Konfigurasi terbaik inilah yang dibandingkan antar algoritma pada `comparison.ipynb`.
 
 ### 5.3 Metrik Evaluasi
@@ -219,8 +235,9 @@ Setiap konfigurasi dijalankan pada keenam instance sebanyak 30 run per instance.
 | % optimum ditemukan | persentase run dengan gap 0 |
 | Waktu eksekusi | detik per run |
 | Iterasi dan evaluasi sampai solusi terbaik | iterasi dan jumlah evaluasi saat solusi terbaik run pertama kali ditemukan |
-| Statistik gap | gap terbaik, rata-rata, simpangan baku, dan terburuk dari 30 run |
-| Uji signifikansi | Wilcoxon rank-sum antar pasangan algoritma per instance, $\alpha = 0{,}05$. Dipilih karena distribusi gap tidak normal (banyak run bernilai tepat 0) |
+| Statistik cost dan gap | nilai terbaik, rata-rata, simpangan baku, dan terburuk dari 30 run |
+| Kurva konvergensi | rata-rata gap solusi terbaik dari 30 run terhadap jumlah evaluasi |
+| Uji signifikansi | Mann-Whitney U (Wilcoxon rank-sum) pada gap akhir antar pasangan algoritma per instance, $\alpha = 0{,}05$. Dipilih karena distribusi gap tidak normal (banyak run bernilai tepat 0). Jika signifikan, algoritma dengan median gap lebih kecil dianggap lebih baik |
 
 Setiap metrik evaluasi diplot terhadap jumlah dieset untuk melihat scalability. Evaluasi dilakukan pada tiga tingkat: 
 1. Sebaran 30 run per instance untuk setiap konfigurasi.
@@ -234,8 +251,9 @@ data/processed/preprocess.py   preprocessing dataset asli
 configs/experiment.json        optimum, seed, budget, dan konfigurasi tiap algoritma
 src/problem.py                 instance, objective, dan constraint
 src/algorithm/                 base, genetic, swarm, random_search
-src/evaluation/                runner, metrik, uji statistik, plot, dan demo
-experiments/                   notebook per algoritma, comparison.ipynb, demo.ipynb, run_all.py
+src/evaluation/                runner, metrik, uji statistik, dan plot
+experiments/                   notebook per algoritma, comparison.ipynb, dan run_all.py
+demo/                          demo.ipynb dan live_demo.py untuk demo langsung
 exp_results/                   tabel (CSV) dan gambar; hasil run mentah (JSON) di exp_results/runs tidak di-commit
 ```
 
@@ -256,7 +274,7 @@ uv run python experiments/run_all.py comparison   # hanya notebook tertentu
 uv run python experiments/run_all.py --save       # sekaligus menyimpan output sel ke notebook
 ```
 
-Demo langsung (GA, BPSO, dan random search pada satu instance, dengan kurva konvergensi yang bergerak) dijalankan dari `experiments/demo.ipynb`.
+Demo langsung (GA, BPSO, dan random search pada satu instance, dengan kurva konvergensi yang bergerak) dijalankan dari `demo/demo.ipynb`. Demo memakai konfigurasi terbaik dari `exp_results/tables/comparison/ranking_all.csv`, sehingga `comparison.ipynb` perlu dijalankan terlebih dahulu.
 
 ---
 
@@ -278,9 +296,9 @@ Tabel berikut merangkum gap rata-rata konfigurasi terbaik tiap algoritma terhada
 
 Key Insight:
 - GA dan BPSO menghasilkan kualitas yang berdekatan dan jauh lebih baik daripada random search dimulai dari instance 16. 
-- Uji Wilcoxon rank-sum: GA dan BPSO tidak berbeda signifikan di semua instance ($p > 0{,}3$), sedangkan keduanya signifikan lebih baik daripada random search mulai instance 16 ($p < 0{,}001$).
+- Uji Mann-Whitney U: GA dan BPSO tidak berbeda signifikan di semua instance ($p > 0{,}3$), sedangkan keduanya signifikan lebih baik daripada random search di instance 13 sampai 19.
 - Kedua Gap rata-rata lebih kecil daripada gap solusi SCIP pada instance 16, 18, dan 19. 
-- Pada GA, operator seleksi memberikan pengaruh terbesar, sedangkan pada BPSO transfer sigmoid lebih baik daripada V-shaped saat inertia konstan. 
+- Pada analisis sensitivitas, ukuran populasi menjadi parameter paling berpengaruh pada GA, dan ukuran swarm pada BPSO. Di antara operator GA, seleksi memberikan perbaikan terbesar, sedangkan pada BPSO transfer sigmoid lebih baik daripada V-shaped saat inertia konstan.
 - Waktu eksekusi rata-rata BPSO 0,018 detik per run, lebih cepat dibanding GA dengan 0,081 detik per run.
 
 Pembahasan lengkap tersedia pada dokumen berikut:

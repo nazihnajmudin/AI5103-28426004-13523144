@@ -13,7 +13,9 @@ Delapan konfigurasi GA dijalankan pada enam instance dengan 30 seed per instance
 | `pop_20` | populasi 20 |
 | `pop_80` | populasi 80 |
 
-## Hasil
+## Analisis Sensitivitas
+
+Setiap konfigurasi mengubah satu proses atau parameter dari default, sehingga perbandingan antar konfigurasi menunjukkan sensitivitas GA terhadap seleksi, crossover, mutasi, dan ukuran populasi.
 
 Seluruh 1.440 run menghasilkan solusi feasible dengan gap di bawah 1%. Di instance 3 dan 9 hanya ada satu run yang tidak mencapai optimum, yaitu satu run `mut_swap` di instance 9. Konfigurasi berikut ini diurutkan dari peringkat terbaik.
 
@@ -36,8 +38,8 @@ Diatas merupakan Boxplot gap 30 seed per konfigurasi. Garis putus-putus merupaka
 
 ## Observasi
 
-1. Selection memberikan pengaruh terbesar. Rank dan roulette selection menurunkan gap rata-rata default dari 0,0172% menjadi 0,0119% dan 0,0139%. Perbaikan paling jelas terlihat pada instance 13, dari 0,0190% menjadi 0,0072% dan 0,0020%. Tournament berukuran 3 memberikan seleksi paling baik, sehingga populasi default konvergen cukup cepat.
-2. Uniform crossover lebih baik daripada one-point (0,0196%) dan two-point (0,0185%).
-3. Swap mutation merupakan variasi operator terburuk, dengan gap rata-rata 0,0262% dan gap maksimum 0,110%. Swap hanya menukar nilai dua gen, sehingga mutasi tidak mengubah jumlah dieset di tiap mesin.
-4. Berbeda dengan BPSO, populasi besar lebih baik pada GA. Populasi 80 (0,0128%) lebih baik daripada populasi 40 (0,0172%), sedangkan populasi 20 menjadi konfigurasi terburuk (0,0270%).
+1. Ukuran populasi merupakan parameter yang paling berpengaruh. Gap rata-rata turun dalam rentang terbesar diantara semua variasi, dari 0,0270% (populasi 20) menjadi 0,0172% (populasi 40) dan 0,0128% (populasi 80). Berbeda dengan BPSO, populasi besar lebih baik pada GA.
+2. Diantara operator, seleksi memberikan perbaikan yang terbesar. Rank dan roulette selection menurunkan gap rata-rata default dari 0,0172% menjadi 0,0119% dan 0,0139%, terutama di instance 13 (dari 0,0190% menjadi 0,0072% dan 0,0020%). Tournament berukuran 3 memberikan tekanan seleksi paling kuat di antara ketiganya, sehingga populasi default kemungkinan konvergen terlalu cepat.
+3. Uniform crossover lebih baik daripada one-point (0,0196%) dan two-point (0,0185%).
+4. Swap mutation merupakan variasi operator terburuk, dengan gap rata-rata 0,0262% dan gap maksimum 0,110%. Swap hanya menukar nilai dua gen, sehingga mutasi tidak mengubah jumlah dieset di tiap mesin.
 5. Seperti pada BPSO, instance 16 dan 19 lebih sulit daripada instance 18 di semua konfigurasi.

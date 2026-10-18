@@ -12,7 +12,9 @@ Tujuh konfigurasi BPSO dijalankan pada enam instance dengan 30 seed per instance
 | `sigmoid_s80` | swarm 80 |
 | `sigmoid_v6` | `v_max` 6 |
 
-## Hasil
+## Analisis Sensitivitas
+
+Setiap konfigurasi mengubah satu proses atau parameter dari default, sehingga perbandingan antar konfigurasi menunjukkan sensitivitas BPSO terhadap fungsi transfer, jadwal inertia, ukuran swarm, dan `v_max`.
 
 Seluruh 1.260 run menghasilkan solusi feasible dengan gap di bawah 1%. Instance 3 dan 9 selalu mencapai optimum di semua konfigurasi, sehingga tabel berikut hanya memuat instance 13 sampai 19. Konfigurasi diurutkan dari peringkat terbaik.
 
@@ -36,6 +38,6 @@ Diatas merupakan Boxplot gap 30 seed per konfigurasi. Garis putus-putus merupaka
 
 1. Konfigurasi terbaik adalah `sigmoid_s20` dengan gap rata-rata 0,0102%, dan yang terburuk adalah `vshape` dengan 0,0177%. Selisih antar konfigurasi lebih kecil daripada sebaran antar seed di boxplot, sehingga urutan peringkat tengah dapat berubah jika seed diganti.
 2. Dengan inertia konstan, transfer sigmoid lebih baik daripada V-shaped di instance 13, 16, dan 19. Inertia linear memperbaiki V-shaped lebih banyak (0,0177% menjadi 0,0137%) dibanding sigmoid (0,0149% menjadi 0,0139%), sehingga kedua fungsi transfer hampir setara dengan inertia linear.
-3. Budget evaluasi yang sama membuat swarm 20 sebanyak 249 iterasi, swarm 40 sebanyak 124 iterasi, dan swarm 80 sebanyak 62 iterasi. Swarm 20 menghasilkan gap terkecil di instance 16 (0,0180%) dengan 50% run mencapai optimum.
+3. Ukuran swarm merupakan parameter yang paling berpengaruh. Swarm 20 menurunkan gap rata-rata default terbesar di antara semua variasi, dari 0,0149% menjadi 0,0102%. Pengaruh ukuran swarm ini tidak bersifat monoton, karena swarm 80 (0,0128%) juga lebih baik daripada swarm 40. Dengan budget evaluasi yang sama, swarm 20 mendapat 249 iterasi, swarm 40 mendapat 124 iterasi, dan swarm 80 mendapat 62 iterasi.
 4. `v_max` 6 memberi persentase optimum tertinggi (63,9%), terutama di instance 18 dengan 40% run mencapai optimum.
 5. Gap tidak selalu naik terhadap jumlah dieset. Instance 16 dan 19 lebih sulit daripada instance 18 di semua konfigurasi.

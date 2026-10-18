@@ -1,14 +1,21 @@
-"""Statistik deskriptif gap dan uji signifikansi antar algoritma."""
+"""Statistik cost dan gap, serta uji signifikansi antar algoritma."""
 
 from __future__ import annotations
 
-from itertools import combinations
-
 import numpy as np
 import pandas as pd
-from scipy.stats import ranksums
+from scipy.stats import mannwhitneyu
 
 ALPHA = 0.05
+
+
+def cost_statistics(runs: pd.DataFrame) -> pd.DataFrame:
+    """Cost terbaik, rata-rata, simpangan baku, dan terburuk per (algoritma, instance)"""
+    feas = runs[runs.feasible]
+    stats = feas.groupby(["n_diesets", "algorithm"]).cost.agg(
+        best="min", mean="mean", std="std", worst="max", n_runs="size"
+    )
+    return stats.reset_index()
 
 
 def gap_statistics(runs: pd.DataFrame) -> pd.DataFrame:
@@ -20,43 +27,38 @@ def gap_statistics(runs: pd.DataFrame) -> pd.DataFrame:
     return stats.reset_index()
 
 
-def rank_sum_test(a: np.ndarray, b: np.ndarray) -> tuple[float, float]:
-    """Wilcoxon rank-sum dua sampel independen -> (statistik, p-value).
-
-    Kalau kedua sampel identik dan konstan (misalnya semua run mencapai optimum),
-    tidak ada perbedaan yang bisa diuji, jadi p = 1.
-    """
-    a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
-    if np.ptp(np.concatenate([a, b])) == 0:
-        return 0.0, 1.0
-    result = ranksums(a, b)
-    return float(result.statistic), float(result.pvalue)
-
-
 def pairwise_tests(runs: pd.DataFrame, alpha: float = ALPHA) -> pd.DataFrame:
-    """Uji Wilcoxon rank-sum gap antar setiap pasangan algoritma, per instance.
+    """Uji Mann-Whitney U (Wilcoxon rank-sum) gap antar pasangan algoritma, per instance.
 
-    `runs` berisi satu konfigurasi per algoritma (misalnya best config).
-    Statistik negatif berarti gap algoritma A cenderung lebih kecil daripada B.
+    `runs` berisi satu konfigurasi per algoritma (best config). Jika p < alpha,
+    algoritma dengan median gap lebih kecil dianggap lebih baik.
     """
     feas = runs[runs.feasible]
+    algorithms = sorted(feas.algorithm.unique())
     rows = []
     for n, g in feas.groupby("n_diesets"):
-        for algo_a, algo_b in combinations(sorted(g.algorithm.unique()), 2):
-            gap_a = g[g.algorithm == algo_a].gap_pct.to_numpy()
-            gap_b = g[g.algorithm == algo_b].gap_pct.to_numpy()
-            stat, p = rank_sum_test(gap_a, gap_b)
-            rows.append(
-                {
-                    "n_diesets": n,
-                    "algorithm_a": algo_a,
-                    "algorithm_b": algo_b,
-                    "gap_mean_a": gap_a.mean(),
-                    "gap_mean_b": gap_b.mean(),
-                    "statistic": stat,
-                    "p_value": p,
-                    "significant": p < alpha,
-                    "better": (algo_a if gap_a.mean() < gap_b.mean() else algo_b) if p < alpha else "-",
-                }
-            )
+        for i in range(len(algorithms)):
+            for j in range(i + 1, len(algorithms)):
+                a, b = algorithms[i], algorithms[j]
+                gap_a = g[g.algorithm == a].gap_pct
+                gap_b = g[g.algorithm == b].gap_pct
+                p = mannwhitneyu(gap_a, gap_b).pvalue
+                if np.isnan(p):
+                    p = 1.0   # semua gap sama (misalnya semua run mencapai optimum)
+
+                better = "-"
+                if p < alpha:
+                    better = a if gap_a.median() < gap_b.median() else b
+                rows.append(
+                    {
+                        "n_diesets": n,
+                        "algorithm_a": a,
+                        "algorithm_b": b,
+                        "median_a": gap_a.median(),
+                        "median_b": gap_b.median(),
+                        "p_value": p,
+                        "significant": p < alpha,
+                        "better": better,
+                    }
+                )
     return pd.DataFrame(rows)

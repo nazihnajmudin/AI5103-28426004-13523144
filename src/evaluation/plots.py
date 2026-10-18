@@ -123,15 +123,15 @@ def plot_config_distribution(df: pd.DataFrame, title: str, optimum: str):
 
 
 def plot_seed_convergence(results: list[RunResult], instances: list[ProblemInstance], title: str, optimum: str):
-    """Satu konfigurasi: kurva konvergensi tiap seed (tipis) dan mediannya (tebal)"""
+    """Satu konfigurasi: kurva konvergensi tiap seed (tipis) dan rata-ratanya (tebal)"""
     fig, axes = plt.subplots(2, 3, figsize=(13, 6.5))
     for ax, inst in zip(axes.ravel(), instances):
         ref = reference_cost(inst, optimum)
         runs = [r for r in results if r.instance == inst.key]
         for r in runs:
             ax.plot(r.history_evaluations, _gap_history(r, ref), color="C0", lw=0.6, alpha=0.3)
-        x, median = _median_curve(runs, ref)
-        ax.plot(x, median, color="C3", lw=2, label="median")
+        x, mean = _mean_curve(runs, ref)
+        ax.plot(x, mean, color="C3", lw=2, label="rata-rata")
         if optimum == "both":
             ax.axhline(_scip_gap(inst, optimum), **SCIP_STYLE)
         ax.set_title(f"{inst.n_diesets} dieset")
@@ -145,27 +145,27 @@ def plot_seed_convergence(results: list[RunResult], instances: list[ProblemInsta
 
 # ----- ANTAR GRUP -----
 
-def _median_curve(runs: list[RunResult], reference: float) -> tuple[np.ndarray, np.ndarray]:
-    """Median gap per iterasi. Run yang lebih pendek diperpanjang dengan nilai terakhirnya"""
+def _mean_curve(runs: list[RunResult], reference: float) -> tuple[np.ndarray, np.ndarray]:
+    """Rata-rata gap per iterasi. Run yang lebih pendek diperpanjang dengan nilai terakhirnya"""
     longest = max(runs, key=lambda r: len(r.history_evaluations))
     length = len(longest.history_evaluations)
     curves = []
     for r in runs:
         gap = _gap_history(r, reference)
         curves.append(np.concatenate([gap, np.full(length - len(gap), gap[-1])]))
-    return np.array(longest.history_evaluations), np.median(curves, axis=0)
+    return np.array(longest.history_evaluations), np.mean(curves, axis=0)
 
 
 def plot_group_convergence(results: list[RunResult], instances: list[ProblemInstance], by: str, title: str, optimum: str):
-    """Median konvergensi tiap grup, satu panel per instance"""
+    """Rata-rata konvergensi tiap grup, satu panel per instance"""
     groups = sorted({getattr(r, by) for r in results})
     fig, axes = plt.subplots(2, 3, figsize=(13, 7))
     for ax, inst in zip(axes.ravel(), instances):
         ref = reference_cost(inst, optimum)
         for k, group in enumerate(groups):
             runs = [r for r in results if r.instance == inst.key and getattr(r, by) == group]
-            x, median = _median_curve(runs, ref)
-            ax.plot(x, median, color=f"C{k}", lw=1.8, label=group)
+            x, mean = _mean_curve(runs, ref)
+            ax.plot(x, mean, color=f"C{k}", lw=1.8, label=group)
         if optimum == "both":
             ax.axhline(_scip_gap(inst, optimum), **SCIP_STYLE)
         ax.set_title(f"{inst.n_diesets} dieset")

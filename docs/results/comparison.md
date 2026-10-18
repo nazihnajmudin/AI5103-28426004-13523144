@@ -26,35 +26,46 @@ Hasil menunjukkan bahwa seluruh run ketiga algoritma feasible dan memiliki gap d
 | BPSO | 86,7 | 80,0 | 80,0 |
 | Random search | 13,3 | 6,7 | 6,7 |
 
-## Uji Signifikansi
+## Statistik Hasil dan Uji Signifikansi
 
-Tabel berikut memuat statistik gap 30 run konfigurasi terbaik tiap algoritma, ditulis sebagai rata-rata ± simpangan baku (terburuk) dalam %. Gap terbaik GA dan BPSO bernilai 0 di semua instance. Gap terbaik random search bernilai 0 di instance 13 dan 16, 0,0065% di instance 18, dan 0,0023% di instance 19.
+Statistik cost 30 run konfigurasi terbaik tiap algoritma, ditulis sebagai rata-rata ± simpangan baku (terbaik / terburuk).
+
+| n | Optimum | GA `sel_rank` | BPSO `sigmoid_s20` | Random `batch_20` |
+|---:|---:|---|---|---|
+| 13 | 5.223.596,12 | 5.223.974,73 ± 958,79 (5.223.596,12 / 5.226.720,98) | 5.223.722,10 ± 503,97 (5.223.596,12 / 5.226.249,39) | 5.223.996,89 ± 573,86 (5.223.596,12 / 5.225.809,41) |
+| 16 | 5.801.121,21 | 5.802.399,81 ± 1.131,78 (5.801.121,21 / 5.805.242,11) | 5.802.163,26 ± 1.197,45 (5.801.121,21 / 5.805.146,57) | 5.805.164,48 ± 1.378,01 (5.801.121,21 / 5.808.028,91) |
+| 18 | 5.962.911,99 | 5.963.414,78 ± 508,44 (5.962.911,99 / 5.965.061,05) | 5.963.512,82 ± 621,08 (5.962.911,99 / 5.965.833,89) | 5.965.369,04 ± 1.241,58 (5.963.302,42 / 5.969.033,44) |
+| 19 | 6.112.960,59 | 6.115.027,31 ± 984,31 (6.112.960,59 / 6.117.468,33) | 6.114.840,69 ± 1.154,43 (6.112.960,59 / 6.117.468,33) | 6.118.758,63 ± 2.683,04 (6.113.101,33 / 6.125.572,41) |
+
+Statistik gap terhadap optimum brute-force dalam %, dengan format yang sama.
 
 | n | GA `sel_rank` | BPSO `sigmoid_s20` | Random `batch_20` |
 |---:|---|---|---|
-| 13 | 0,0072 ± 0,0184 (0,0598) | 0,0024 ± 0,0096 (0,0508) | 0,0077 ± 0,0110 (0,0424) |
-| 16 | 0,0220 ± 0,0195 (0,0710) | 0,0180 ± 0,0206 (0,0694) | 0,0697 ± 0,0238 (0,1191) |
-| 18 | 0,0084 ± 0,0085 (0,0360) | 0,0101 ± 0,0104 (0,0490) | 0,0412 ± 0,0208 (0,1027) |
-| 19 | 0,0338 ± 0,0161 (0,0737) | 0,0308 ± 0,0189 (0,0737) | 0,0948 ± 0,0439 (0,2063) |
+| 13 | 0,0072 ± 0,0184 (0,0000 / 0,0598) | 0,0024 ± 0,0096 (0,0000 / 0,0508) | 0,0077 ± 0,0110 (0,0000 / 0,0424) |
+| 16 | 0,0220 ± 0,0195 (0,0000 / 0,0710) | 0,0180 ± 0,0206 (0,0000 / 0,0694) | 0,0697 ± 0,0238 (0,0000 / 0,1191) |
+| 18 | 0,0084 ± 0,0085 (0,0000 / 0,0360) | 0,0101 ± 0,0104 (0,0000 / 0,0490) | 0,0412 ± 0,0208 (0,0065 / 0,1027) |
+| 19 | 0,0338 ± 0,0161 (0,0000 / 0,0737) | 0,0308 ± 0,0189 (0,0000 / 0,0737) | 0,0948 ± 0,0439 (0,0023 / 0,2063) |
 
-Perbedaan antar algoritma diuji dengan Wilcoxon rank-sum ($\alpha = 0{,}05$) untuk setiap pasangan algoritma per instance. Uji non-parametrik ini dipakai karena distribusi gap tidak normal: banyak run bernilai tepat 0.
+Gap akhir dua algoritma dibandingkan per instance dengan uji Mann-Whitney U, yang juga dikenal sebagai Wilcoxon rank-sum, pada $\alpha = 0{,}05$. Uji non-parametrik ini dipakai karena distribusi gap tidak normal: banyak run bernilai tepat 0. Jika perbedaannya signifikan, algoritma dengan median gap lebih kecil dianggap lebih baik.
 
 | n | GA vs BPSO (p) | BPSO vs random (p) | GA vs random (p) |
 |---:|---:|---:|---:|
-| 13 | 0,620 | **0,009** | 0,066 |
-| 16 | 0,329 | **< 0,001** | **< 0,001** |
-| 18 | 0,620 | **< 0,001** | **< 0,001** |
-| 19 | 0,663 | **< 0,001** | **< 0,001** |
+| 13 | 0,409 | **0,001** | **0,029** |
+| 16 | 0,305 | **< 0,001** | **< 0,001** |
+| 18 | 0,623 | **< 0,001** | **< 0,001** |
+| 19 | 0,666 | **< 0,001** | **< 0,001** |
 
 Nilai p yang dicetak tebal signifikan. Di instance 3 dan 9, semua run ketiga algoritma mencapai optimum, sehingga tidak ada perbedaan yang dapat diuji.
 
-1. GA dan BPSO tidak berbeda signifikan di semua instance. Perbedaan rata-rata gap keduanya lebih kecil daripada sebaran antar seed.
-2. GA dan BPSO signifikan lebih baik daripada random search mulai instance 16. Di instance 13, hanya BPSO yang sudah signifikan lebih baik daripada random search.
-3. Tabel lengkap tersimpan di `exp_results/tables/comparison/gap_statistics.csv` dan `wilcoxon.csv`, dibuat oleh bagian 5 di `comparison.ipynb`.
+1. GA dan BPSO, dua algoritma terbaik, tidak berbeda signifikan di semua instance ($p > 0{,}3$). Perbedaan rata-rata gap keduanya lebih kecil daripada sebaran antar seed.
+2. GA dan BPSO signifikan lebih baik daripada random search di instance 13 sampai 19.
+3. Tabel lengkap tersimpan di `exp_results/tables/comparison/` (`cost_statistics.csv`, `gap_statistics.csv`, dan `wilcoxon.csv`), dibuat oleh bagian 5 di `comparison.ipynb`.
 
 ## Konvergensi dan Waktu
 
 ![Konvergensi antar algoritma](../img/results/comparison_convergence.png)
+
+Rata-rata gap 30 run terhadap jumlah evaluasi. Garis putus-putus adalah gap solusi SCIP.
 
 ![Evaluasi sampai solusi terbaik](../img/results/comparison_evaluations_to_best.png)
 

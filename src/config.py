@@ -23,12 +23,11 @@ def load_config(path: str | Path = CONFIG_PATH) -> dict:
         return json.load(f)
 
 
-def build_algorithm(algorithm: str, config_name: str, config: dict | None = None, **overrides) -> Algorithm:
+def build_algorithm(algorithm: str, config_name: str, config: dict | None = None) -> Algorithm:
     """Satu objek algoritma: hyperparameter konfigurasi + budget bersama"""
     config = config or load_config()
     params = config["algorithms"][algorithm][config_name]
-    budget = {**config["budget"], **overrides}
-    return ALGORITHMS[algorithm](**params, **budget)
+    return ALGORITHMS[algorithm](**params, **config["budget"])
 
 
 def build_configs(algorithm: str, config: dict | None = None) -> dict[str, Algorithm]:
