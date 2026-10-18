@@ -1,0 +1,36 @@
+{
+  "optimum": "both",
+  "n_runs": 30,
+  "master_seed": 2026,
+  "budget": {
+    "max_evaluations": 5000,
+    "max_iterations": 1000,
+    "patience": null
+  },
+  "algorithms": {
+    "random_search": {
+      "batch_20": {"batch_size": 20},
+      "batch_40": {"batch_size": 40},
+      "batch_80": {"batch_size": 80}
+    },
+    "swarm": {
+      "sigmoid": {},
+      "sigmoid_lin": {"inertia": 0.9, "inertia_end": 0.4},
+      "vshape": {"transfer": "vshape"},
+      "vshape_lin": {"transfer": "vshape", "inertia": 0.9, "inertia_end": 0.4},
+      "sigmoid_s20": {"swarm_size": 20},
+      "sigmoid_s80": {"swarm_size": 80},
+      "sigmoid_v6": {"v_max": 6.0}
+    },
+    "genetic": {
+      "default": {},
+      "sel_roulette": {"selection": "roulette"},
+      "sel_rank": {"selection": "rank"},
+      "cx_one_point": {"crossover": "one_point"},
+      "cx_two_point": {"crossover": "two_point"},
+      "mut_swap": {"mutation": "swap"},
+      "pop_20": {"population_size": 20},
+      "pop_80": {"population_size": 80}
+    }
+  }
+}

@@ -197,7 +197,7 @@ Hasil pada repositori ini menggunakan `both`.
 
 ### 5.2 Konfigurasi Percobaan
 
-Setiap konfigurasi dijalankan pada keenam instance sebanyak 30 run per instance. Seed setiap run diacak dari master seed 2026, dan daftar seed yang sama dipakai untuk semua konfigurasi. Setiap run berhenti setelah 5.000 evaluasi fitness, tanpa patience.
+Setiap konfigurasi dijalankan pada keenam instance sebanyak 30 run per instance. Seed setiap run diacak dari master seed 2026, dan daftar seed yang sama dipakai untuk semua konfigurasi. Setiap run berhenti setelah 5.000 evaluasi fitness, tanpa patience. Optimum pembanding, jumlah run, master seed, budget, dan hyperparameter setiap konfigurasi disimpan di `configs/experiment.json` dan dibaca oleh semua notebook.
 
 | Algoritma | Konfigurasi |
 |---|---|
@@ -219,6 +219,8 @@ Setiap konfigurasi dijalankan pada keenam instance sebanyak 30 run per instance.
 | % optimum ditemukan | persentase run dengan gap 0 |
 | Waktu eksekusi | detik per run |
 | Iterasi dan evaluasi sampai solusi terbaik | iterasi dan jumlah evaluasi saat solusi terbaik run pertama kali ditemukan |
+| Statistik gap | gap terbaik, rata-rata, simpangan baku, dan terburuk dari 30 run |
+| Uji signifikansi | Wilcoxon rank-sum antar pasangan algoritma per instance, $\alpha = 0{,}05$. Dipilih karena distribusi gap tidak normal (banyak run bernilai tepat 0) |
 
 Setiap metrik evaluasi diplot terhadap jumlah dieset untuk melihat scalability. Evaluasi dilakukan pada tiga tingkat: 
 1. Sebaran 30 run per instance untuk setiap konfigurasi.
@@ -229,19 +231,32 @@ Setiap metrik evaluasi diplot terhadap jumlah dieset untuk melihat scalability. 
 
 ```text
 data/processed/preprocess.py   preprocessing dataset asli
+configs/experiment.json        optimum, seed, budget, dan konfigurasi tiap algoritma
 src/problem.py                 instance, objective, dan constraint
 src/algorithm/                 base, genetic, swarm, random_search
-src/evaluation/                runner, metrik, dan plot
-experiments/                   notebook per algoritma dan comparison.ipynb
-results/                       hasil run (JSON), tabel (CSV), dan gambar
+src/evaluation/                runner, metrik, uji statistik, plot, dan demo
+experiments/                   notebook per algoritma, comparison.ipynb, demo.ipynb, run_all.py
+exp_results/                   tabel (CSV) dan gambar; hasil run mentah (JSON) di exp_results/runs tidak di-commit
 ```
+
+Instalasi, lalu reproduksi seluruh tabel dan gambar dengan satu perintah:
 
 ```bash
-pip install numpy pandas matplotlib ipykernel nbformat   # atau: uv sync
-python data/processed/preprocess.py
+uv sync                                  # atau: pip install numpy pandas matplotlib ipykernel nbformat nbclient scipy
+uv run python experiments/run_all.py     # sekitar 6 menit
 ```
 
-Notebook `random_search.ipynb`, `swarm.ipynb`, dan `genetic.ipynb` dijalankan terlebih dahulu, lalu `comparison.ipynb` membaca hasilnya dari `results/`.
+`run_all.py` menjalankan `random_search.ipynb`, `swarm.ipynb`, dan `genetic.ipynb`, lalu `comparison.ipynb` yang membaca hasilnya dari `exp_results/runs/`. Tabel tersimpan di `exp_results/tables/` dan gambar di `exp_results/figures/`. Hasil yang dibuat ulang identik dengan yang di repositori, kecuali kolom waktu eksekusi yang bergantung pada mesin.
+
+Perintah lain:
+
+```bash
+uv run python data/processed/preprocess.py        # membuat ulang data/processed/instances (sudah tersedia di repo)
+uv run python experiments/run_all.py comparison   # hanya notebook tertentu
+uv run python experiments/run_all.py --save       # sekaligus menyimpan output sel ke notebook
+```
+
+Demo langsung (GA, BPSO, dan random search pada satu instance, dengan kurva konvergensi yang bergerak) dijalankan dari `experiments/demo.ipynb`.
 
 ---
 
@@ -263,6 +278,7 @@ Tabel berikut merangkum gap rata-rata konfigurasi terbaik tiap algoritma terhada
 
 Key Insight:
 - GA dan BPSO menghasilkan kualitas yang berdekatan dan jauh lebih baik daripada random search dimulai dari instance 16. 
+- Uji Wilcoxon rank-sum: GA dan BPSO tidak berbeda signifikan di semua instance ($p > 0{,}3$), sedangkan keduanya signifikan lebih baik daripada random search mulai instance 16 ($p < 0{,}001$).
 - Kedua Gap rata-rata lebih kecil daripada gap solusi SCIP pada instance 16, 18, dan 19. 
 - Pada GA, operator seleksi memberikan pengaruh terbesar, sedangkan pada BPSO transfer sigmoid lebih baik daripada V-shaped saat inertia konstan. 
 - Waktu eksekusi rata-rata BPSO 0,018 detik per run, lebih cepat dibanding GA dengan 0,081 detik per run.

@@ -26,6 +26,32 @@ Hasil menunjukkan bahwa seluruh run ketiga algoritma feasible dan memiliki gap d
 | BPSO | 86,7 | 80,0 | 80,0 |
 | Random search | 13,3 | 6,7 | 6,7 |
 
+## Uji Signifikansi
+
+Tabel berikut memuat statistik gap 30 run konfigurasi terbaik tiap algoritma, ditulis sebagai rata-rata ± simpangan baku (terburuk) dalam %. Gap terbaik GA dan BPSO bernilai 0 di semua instance. Gap terbaik random search bernilai 0 di instance 13 dan 16, 0,0065% di instance 18, dan 0,0023% di instance 19.
+
+| n | GA `sel_rank` | BPSO `sigmoid_s20` | Random `batch_20` |
+|---:|---|---|---|
+| 13 | 0,0072 ± 0,0184 (0,0598) | 0,0024 ± 0,0096 (0,0508) | 0,0077 ± 0,0110 (0,0424) |
+| 16 | 0,0220 ± 0,0195 (0,0710) | 0,0180 ± 0,0206 (0,0694) | 0,0697 ± 0,0238 (0,1191) |
+| 18 | 0,0084 ± 0,0085 (0,0360) | 0,0101 ± 0,0104 (0,0490) | 0,0412 ± 0,0208 (0,1027) |
+| 19 | 0,0338 ± 0,0161 (0,0737) | 0,0308 ± 0,0189 (0,0737) | 0,0948 ± 0,0439 (0,2063) |
+
+Perbedaan antar algoritma diuji dengan Wilcoxon rank-sum ($\alpha = 0{,}05$) untuk setiap pasangan algoritma per instance. Uji non-parametrik ini dipakai karena distribusi gap tidak normal: banyak run bernilai tepat 0.
+
+| n | GA vs BPSO (p) | BPSO vs random (p) | GA vs random (p) |
+|---:|---:|---:|---:|
+| 13 | 0,620 | **0,009** | 0,066 |
+| 16 | 0,329 | **< 0,001** | **< 0,001** |
+| 18 | 0,620 | **< 0,001** | **< 0,001** |
+| 19 | 0,663 | **< 0,001** | **< 0,001** |
+
+Nilai p yang dicetak tebal signifikan. Di instance 3 dan 9, semua run ketiga algoritma mencapai optimum, sehingga tidak ada perbedaan yang dapat diuji.
+
+1. GA dan BPSO tidak berbeda signifikan di semua instance. Perbedaan rata-rata gap keduanya lebih kecil daripada sebaran antar seed.
+2. GA dan BPSO signifikan lebih baik daripada random search mulai instance 16. Di instance 13, hanya BPSO yang sudah signifikan lebih baik daripada random search.
+3. Tabel lengkap tersimpan di `exp_results/tables/comparison/gap_statistics.csv` dan `wilcoxon.csv`, dibuat oleh bagian 5 di `comparison.ipynb`.
+
 ## Konvergensi dan Waktu
 
 ![Konvergensi antar algoritma](../img/results/comparison_convergence.png)
