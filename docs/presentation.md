@@ -83,7 +83,12 @@ $$f = \sum_i c_{i,\text{gene}[i]} + \lambda \sum_m \max(0, \text{load}_m - h_m)^
 - SCIP memakai kapasitas dan beban yang dibulatkan. Brute-force memakai nilai asli, dan dipakai sebagai acuan gap.
 - Instance 3, 9, dan 13 memiliki optimum yang sama.
 
-**Baseline:** random search, karena setara dengan random reference di paper dan menunjukkan kontribusi mekanisme pencarian.
+**Tiga algoritma yang dibandingkan:** GA dan BPSO sebagai algoritma utama, dan random search sebagai **baseline** (pembanding wajib di spesifikasi).
+
+**Baseline: random search**
+- Cara kerja: setiap iterasi membangkitkan 20 solusi acak dan menyimpan yang terbaik, tanpa memakai informasi dari solusi sebelumnya.
+- Asal: diadaptasi dari *random reference* di paper Path Matters (terbaik dari 1.000 bitstring acak). Di sini budget-nya disamakan dengan GA dan BPSO, yaitu 5.000 evaluasi. Kodenya ditulis sendiri.
+- Alasan: menjadi tolok ukur paling bawah. GA/BPSO baru dianggap berguna kalau lebih baik daripada menebak acak.
 
 **Setting yang adil:** semua algoritma diberi 5.000 evaluasi fitness, 30 run per instance, dan seed yang sama (master seed 2026).
 
@@ -188,13 +193,30 @@ Konfigurasi terbaik tiap algoritma, 30 run per instance. Gap dalam %, ditulis se
 
 ## Slide 10 — Demo
 
-Menjalankan program pada **instance 19 dieset** dengan seed dan budget yang sama untuk ketiga algoritma:
+Menjalankan program pada **instance 19 dieset** dengan seed dan budget yang sama untuk GA, BPSO, dan baseline random search:
 
-1. Kurva konvergensi GA, BPSO, dan random search yang bergerak selama pencarian.
-2. Solusi akhir: alokasi dieset ke GP260/GP640 dan beban tiap mesin terhadap kapasitasnya.
-3. Tabel perbandingan cost dan gap ketiga algoritma terhadap optimum.
+Yang ditampilkan: kurva konvergensi yang bergerak, alokasi dieset ke GP260/GP640 dan beban mesin, serta tabel hasil.
+
+**Hasil akhir demo** (seed 1829338324, 5.000 evaluasi per algoritma)
+
+| Peringkat | Algoritma | Cost | Gap (%) | Dieset beda dari optimum |
+|---:|---|---:|---:|---:|
+| 1 | GA (`sel_rank`) | 6.115.170,04 | 0,0361 | 7 dari 19 |
+| 2 | BPSO (`sigmoid_s20`) | 6.115.749,05 | 0,0456 | 6 dari 19 |
+| 3 | Random search (`batch_20`) | 6.117.606,81 | 0,0760 | 6 dari 19 |
+| – | Solusi SCIP (paper) | 6.115.761,14 | 0,0458 | – |
+
+Optimum brute-force: 6.112.960,59.
+
+**Penjelasan**
+- Pada run ini, GA mendapat gap terkecil, diikuti BPSO. Keduanya lebih murah daripada solusi SCIP di paper.
+- Random search tertinggal, karena tidak belajar dari solusi sebelumnya.
+- Semua solusi feasible. GP640 terisi hampir 100%, karena solusi murah memindahkan dieset sebanyak mungkin ke mesin yang lebih murah sampai kapasitasnya penuh.
+- Hasil satu seed bukan kesimpulan. Dari 30 run, GA vs BPSO tidak berbeda signifikan (p = 0,66), dan keduanya signifikan lebih baik daripada random search (p < 10⁻⁸).
 
 Cadangan: video demo maksimal 3 menit.
+
+**Visual:** `img/demo-result.png` (frame terakhir demo), atau animasinya `img/demo-animation.gif`
 
 ---
 

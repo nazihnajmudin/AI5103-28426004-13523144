@@ -15,14 +15,17 @@ import pandas as pd
 from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 
-from src.algorithm import GeneticAlgorithm, ParticleSwarm, RandomSearch
 from src.algorithm.base import Algorithm
+from src.config import build_algorithm, load_config
 from src.evaluation.runner import make_seeds
 from src.optimum import brute_force
-from src.paths import INSTANCES_DIR
+from src.paths import INSTANCES_DIR, TABLES_DIR
 from src.problem import ProblemInstance, load_instance
 
-MASTER_SEED = 2026
+# konfigurasi terbaik tiap algoritma (peringkat 1 di comparison.ipynb)
+DEMO_CONFIGS = [("GA", "genetic", "sel_rank"), ("BPSO", "swarm", "sigmoid_s20"), ("Random", "random_search", "batch_20")]
+LABELS = {algo: label for label, algo, _ in DEMO_CONFIGS}
+FULL_NAMES = {"GA": "GA", "BPSO": "BPSO", "Random": "random search"}
 COLORS = {"GA": "#eb6834", "BPSO": "#2a78d6", "Random": "#8a8984"}
 MACHINE_COLORS = ["#d9d4c7", "#4a4a48"]
 INK, MUTED, GRID = "#0b0b0b", "#52514e", "#e6e5e0"
@@ -58,29 +61,37 @@ def fmt_num(x: float, digits: int = 2) -> str:
     return f"{x:,.{digits}f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 
-def build_lanes(budget: int) -> list[Lane]:
-    # konfigurasi terbaik tiap algoritma, budget sama dengan notebook percobaan
-    limits = dict(max_evaluations=budget, max_iterations=1000, patience=None)
+def join_names(names: list[str]) -> str:
+    """Gabungkan nama: ["A", "B", "C"] -> A, B, dan C"""
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + (", dan " if len(names) > 2 else " dan ") + names[-1]
+
+
+def fmt_p(p: float) -> str:
+    return "< 0,001" if p < 0.001 else f"= {fmt_num(p, 3)}"
+
+
+def build_lanes(config: dict, budget: int) -> list[Lane]:
+    # hyperparameter dan budget dari configs/experiment.json, max_evaluations bisa diganti
     return [
-        Lane("GA", "sel_rank", GeneticAlgorithm(selection="rank", **limits)),
-        Lane("BPSO", "sigmoid_s20", ParticleSwarm(swarm_size=20, **limits)),
-        Lane("Random", "batch_20", RandomSearch(batch_size=20, **limits)),
+        Lane(label, name, build_algorithm(algo, name, config, max_evaluations=budget))
+        for label, algo, name in DEMO_CONFIGS
     ]
 
 
 class Demo:
     """Satu sesi demo: `frames()` menjalankan algoritma dan memperbarui `fig` setiap frame"""
 
-    def __init__(self, n_diesets: int = 19, seed: int | None = None, budget: int = 5000, step: int = 50):
-        self.problem = load_instance(INSTANCES_DIR / f"instance_{n_diesets}_diesets.json", optimum="both")
-        self.seed = seed if seed is not None else make_seeds(MASTER_SEED, 1)[0]
-        self.budget = budget
+    def __init__(self, n_diesets: int = 19, seed: int | None = None, budget: int | None = None, step: int = 50):
+        config = load_config()
+        self.problem = load_instance(INSTANCES_DIR / f"instance_{n_diesets}_diesets.json", optimum=config["optimum"])
+        self.seed = seed if seed is not None else make_seeds(config["master_seed"], 1)[0]
+        self.budget = budget if budget is not None else config["budget"]["max_evaluations"]
         self.step = step
 
         self.opt_cost, self.opt_genome, _ = brute_force(self.problem)
         self.scip_gap = self.gap(self.problem.optimal_cost)
 
-        self.lanes = build_lanes(budget)
+        self.lanes = build_lanes(config, self.budget)
         for lane in self.lanes:
             lane.steps = stepper(lane.algo, self.problem, self.seed)
         self._setup_figure()
@@ -113,6 +124,90 @@ class Demo:
                 "waktu_sec": lane.elapsed,
             })
         return pd.DataFrame(rows)
+
+    def result_table(self) -> pd.DataFrame:
+        """Tabel hasil akhir untuk ditampilkan, diurutkan dari gap terkecil"""
+        df = self.summary().sort_values("gap_pct", ignore_index=True)
+        opt_machine = self._machine_of(self.opt_genome)
+        diff = {lane.label: int((self._machine_of(lane.algo.best_genome) != opt_machine).sum()) for lane in self.lanes}
+        table = pd.DataFrame({
+            "Peringkat": range(1, len(df) + 1),
+            "Algoritma": df.algoritma,
+            "Konfigurasi": df.konfigurasi,
+            "Cost": df.cost.map(fmt_num),
+            "Selisih ke optimum": (df.cost - self.opt_cost).clip(lower=0).map(fmt_num),
+            "Gap (%)": df.gap_pct.clip(lower=0).map(lambda g: fmt_num(g, 4)),
+            "Dieset beda dari optimum": df.algoritma.map(lambda a: f"{diff[a]} dari {self.problem.n_diesets}"),
+            "Feasible": df.feasible.map({True: "ya", False: "tidak"}),
+            "Evaluasi sampai terbaik": df.evaluasi_sampai_terbaik.map(lambda e: fmt_num(e, 0)),
+            "Waktu (s)": df.waktu_sec.map(lambda t: fmt_num(t, 3)),
+        })
+        scip = pd.DataFrame([{
+            "Peringkat": "-", "Algoritma": "Solusi SCIP (paper)", "Konfigurasi": "-",
+            "Cost": fmt_num(self.problem.optimal_cost),
+            "Selisih ke optimum": fmt_num(max(0.0, self.problem.optimal_cost - self.opt_cost)),
+            "Gap (%)": fmt_num(max(0.0, self.scip_gap), 4), "Dieset beda dari optimum": "-", "Feasible": "ya",
+            "Evaluasi sampai terbaik": "-", "Waktu (s)": "-",
+        }])
+        return pd.concat([table, scip], ignore_index=True).set_index("Peringkat")
+
+    def explanation(self) -> str:
+        """Penjelasan hasil run ini dan konteksnya dari 30 run percobaan (Markdown)"""
+        df = self.summary().sort_values("gap_pct", ignore_index=True)
+        name = lambda label: FULL_NAMES[label]
+        gap = lambda g: f"{fmt_num(g, 4)}%"
+        best, others = df.iloc[0], df.iloc[1:]
+
+        lines = [f"**Hasil run ini** (instance {self.problem.n_diesets} dieset, seed {self.seed}, "
+                 f"{fmt_num(self.budget, 0)} evaluasi per algoritma)", ""]
+        if np.ptp(df.gap_pct) < 1e-9:
+            reached = "mencapai optimum" if best.gap_pct < 1e-9 else f"mendapat gap yang sama ({gap(best.gap_pct)})"
+            lines.append(f"- Ketiga algoritma {reached}.")
+        else:
+            lines.append(f"- Gap terkecil diperoleh **{name(best.algoritma)}** ({gap(best.gap_pct)}), diikuti "
+                         + join_names([f"{name(r.algoritma)} ({gap(r.gap_pct)})" for r in others.itertuples()]) + ".")
+        if self.scip_gap > 1e-9:
+            cheaper = [name(r.algoritma) for r in df.itertuples() if r.gap_pct < self.scip_gap]
+            verdict = (f"{join_names(cheaper)} menghasilkan solusi lebih murah daripada solusi tersebut"
+                       if cheaper else "tidak ada algoritma yang lebih murah daripada solusi tersebut pada run ini")
+            lines.append(f"- Solusi SCIP dari paper memiliki gap {gap(self.scip_gap)} terhadap optimum brute-force; {verdict}.")
+        feasible = "Semua solusi akhir feasible" if df.feasible.all() else "Ada solusi akhir yang tidak feasible"
+        util =[100 * self.problem.evaluate(lane.algo.best_genome).loads / self.problem.capacity for lane in self.lanes]
+        busiest = int(np.argmax(np.mean(util, axis=0)))
+        lo, hi = fmt_num(min(u[busiest] for u in util), 1), fmt_num(max(u[busiest] for u in util), 1)
+        lines.append(f"- {feasible}. Mesin {self.problem.machine_names[busiest]} terisi "
+                     f"{lo if lo == hi else f'{lo}–{hi}'}% dari kapasitasnya: "
+                     "solusi murah memindahkan sebanyak mungkin dieset ke mesin yang lebih murah sampai kapasitasnya hampir penuh.")
+
+        context = self._context_from_runs()
+        if context:
+            lines += ["", f"**Konteks dari {context['n_runs']} run percobaan** (`exp_results/tables/comparison/`)", ""]
+            lines.append("- Gap rata-rata: " + ", ".join(
+                f"{name(LABELS[a])} {gap(m)}" for a, m in context["mean"].items()) + ".")
+            for (a, b), (p, significant, better) in context["tests"].items():
+                pair = f"{name(LABELS[a])} vs {name(LABELS[b])}"
+                if significant:
+                    lines.append(f"- {pair}: berbeda signifikan (Wilcoxon, p {fmt_p(p)}); {name(LABELS[better])} lebih baik.")
+                else:
+                    lines.append(f"- {pair}: tidak berbeda signifikan (Wilcoxon, p {fmt_p(p)}).")
+            lines.append("- Hasil satu seed bisa berbeda dari kesimpulan di atas. Kesimpulan ditarik dari 30 run, bukan dari satu demo.")
+        return "\n".join(lines)
+
+    def _context_from_runs(self) -> dict | None:
+        """Ringkasan 30 run untuk instance ini dari tabel comparison.ipynb, kalau sudah ada"""
+        stats_path = TABLES_DIR / "comparison" / "gap_statistics.csv"
+        tests_path = TABLES_DIR / "comparison" / "wilcoxon.csv"
+        if not (stats_path.exists() and tests_path.exists()):
+            return None
+        stats = pd.read_csv(stats_path)
+        stats = stats[stats.n_diesets == self.problem.n_diesets]
+        tests = pd.read_csv(tests_path)
+        tests = tests[tests.n_diesets == self.problem.n_diesets]
+        return {
+            "n_runs": int(stats.n_runs.iloc[0]),
+            "mean": {a: stats[stats.algorithm == a]["mean"].iloc[0] for a in LABELS if a in set(stats.algorithm)},
+            "tests": {(r.algorithm_a, r.algorithm_b): (r.p_value, bool(r.significant), r.better) for r in tests.itertuples()},
+        }
 
     def _advance(self, lane: Lane, target: int) -> None:
         while not lane.done and (not lane.evals or lane.algo.n_evaluations < target):
